@@ -1216,51 +1216,45 @@ span[class*="openapi-schema__type"] {
    API ENDPOINT PAGES — Responsive layout fixes
    ============================================================ */
 
-/* URL bar — allow horizontal scroll and word wrap */
+/* Prevent flex children from overflowing (min-width: 0 is the key) */
+.openapi-left-panel__container,
+.openapi-right-panel__container {
+  min-width: 0;
+}
+
+/* URL bar — wrap the full URL instead of truncating */
 .openapi__method-endpoint {
+  flex-wrap: wrap;
   overflow-x: auto;
 }
 
 .openapi__method-endpoint-path {
   word-break: break-all;
   overflow-wrap: anywhere;
+  font-size: 0.85rem;
 }
 
-/* Code samples panel — ensure scrollable */
+/* Code samples panel — scrollable code blocks */
 .openapi-right-panel__container pre {
-  overflow-x: auto;
+  overflow-x: auto !important;
   max-width: 100%;
+  white-space: pre;
 }
 
-/* Fix API page content columns to not overflow viewport */
-.openapi-left-panel__container,
-.openapi-right-panel__container {
-  min-width: 0;
-  overflow: hidden;
-}
-
-/* API pages — give right panel more room */
-@media screen and (min-width: 997px) and (max-width: 1400px) {
-  .openapi-left-panel__container.col--7 {
-    flex: 0 0 55%;
-    max-width: 55%;
-  }
-  .openapi-right-panel__container.col--5 {
-    flex: 0 0 45%;
-    max-width: 45%;
-  }
-}
-
-/* Stack API panels on narrower screens */
-@media screen and (max-width: 996px) {
+/* Stack panels vertically below 1300px — two-panel only works on wide screens */
+@media screen and (max-width: 1300px) {
   .openapi-left-panel__container.col--7,
   .openapi-right-panel__container.col--5 {
-    flex: 0 0 100%;
-    max-width: 100%;
-    padding-left: 0;
-    padding-right: 0;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
   }
 
+  .openapi-right-panel__container {
+    margin-top: 2rem;
+  }
+}
+
+@media screen and (max-width: 996px) {
   div[class*="docItemCol"] {
     max-width: 100% !important;
   }
