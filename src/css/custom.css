@@ -604,10 +604,10 @@ div[class*="codeBlockTitle"] {
    API REFERENCE — REQUEST/RESPONSE PANELS
    ============================================================ */
 
-/* OpenAPI doc panels */
+/* OpenAPI doc panels — border-radius only, NO overflow:hidden
+   (overflow:hidden was clipping code samples in the right panel) */
 div[class*="openapi-tabs__"] {
   border-radius: var(--bb-radius-lg);
-  overflow: hidden;
 }
 
 /* Schema/parameter tables in API docs */
@@ -926,8 +926,9 @@ table tbody tr:hover {
    DOC PAGE LAYOUT ENHANCEMENTS
    ============================================================ */
 
-/* Main doc content area */
-.theme-doc-markdown {
+/* Main doc content area — 800px cap for regular docs only.
+   API pages (.theme-api-markdown) need full width for two-panel layout. */
+.theme-doc-markdown:not(:has(.theme-api-markdown)) {
   max-width: 800px;
 }
 
@@ -1231,10 +1232,39 @@ span[class*="openapi-schema__type"] {
   padding-right: 2rem;
 }
 
-/* Prevent flex children from blowing out of row */
+/* When the page contains the API two-panel layout, remove the 800px
+   cap on .theme-doc-markdown so the full viewport is used.
+   (Fallback for browsers that don't support :has() — targets the
+   wrapper directly) */
+.theme-doc-markdown:has(.theme-api-markdown) {
+  max-width: none;
+}
+
+/* Prevent flex children from blowing out of their column */
 .openapi-left-panel__container,
 .openapi-right-panel__container {
   min-width: 0;
+}
+
+/* Right panel: ensure code containers don't clip content.
+   The parent .openapi-tabs__code-container had overflow:hidden from
+   the custom "openapi-tabs__" rule — that's now removed. Ensure
+   the inner containers allow horizontal scroll on the <pre>. */
+.openapi-right-panel__container .openapi-tabs__code-container,
+.openapi-right-panel__container .openapi-tabs__code-container-inner {
+  overflow: visible;
+}
+
+/* Code samples — enable horizontal scrolling on every code block */
+.openapi-explorer__code-block code {
+  overflow-x: auto !important;
+  display: block;
+}
+
+.openapi-right-panel__container pre,
+.openapi-tabs__code-container pre,
+.openapi-tabs__code-container code {
+  overflow-x: auto !important;
 }
 
 /* URL bar — wrap the full path instead of truncating */
@@ -1247,18 +1277,6 @@ span[class*="openapi-schema__type"] {
   word-break: break-all;
   overflow-wrap: anywhere;
   font-size: 0.85rem;
-}
-
-/* Code samples — enable horizontal scrolling on every code container */
-.openapi-explorer__code-block code {
-  overflow-x: auto !important;
-  display: block;
-}
-
-.openapi-right-panel__container pre,
-.openapi-tabs__code-container pre,
-.openapi-tabs__code-container code {
-  overflow-x: auto !important;
 }
 
 /* Left panel: remove right border when panels stack */
