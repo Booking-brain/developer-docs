@@ -1161,19 +1161,29 @@ span[class*="openapi-schema__type"] {
    API DOC CARDS — Replace emoji icons with method-colored borders
    ============================================================ */
 
-/* Hide the default 📄️ emoji on API doc cards */
+/* Hide the default 📄️ emoji on API doc cards.
+   We use text-indent to push the emoji off-screen and ::after to render
+   the clean title. This avoids the font-size:0 approach which caused
+   truncation and doubled text in accessibility tree. */
 .api-method [class*="cardTitle"] {
-  font-size: 0;
-  line-height: 0;
+  text-indent: -9999px;
+  overflow: hidden;
+  position: relative;
+  display: block;
 }
 
 .api-method [class*="cardTitle"]::after {
   content: attr(title);
+  text-indent: 0;
+  display: block;
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.4;
   letter-spacing: -0.01em;
   color: var(--bb-gray-900);
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 [data-theme='dark'] .api-method [class*="cardTitle"]::after {

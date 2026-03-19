@@ -3,6 +3,7 @@ id: booking-flow
 title: Booking Flow
 description: Step-by-step guide to the complete booking journey — from property search to payment processing with full code examples.
 sidebar_position: 5
+keywords: [booking flow, checkout, payment processing, availability, pricing, integration guide, code examples]
 ---
 
 # Complete Booking Flow

@@ -3,6 +3,7 @@ id: errors
 title: Error Handling
 description: HTTP status codes, error response format, rate limiting, and strategies for building resilient Booking Brain API integrations.
 sidebar_position: 4
+keywords: [error handling, HTTP status codes, rate limiting, error response, 429, retry, error codes]
 ---
 
 # Error Handling

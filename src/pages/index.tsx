@@ -284,7 +284,7 @@ export default function Home(): ReactNode {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title="Home"
+      title="Developer API Documentation"
       description="Booking Brain Developer API - Integrate property search, booking, and payment into your website">
       <HomepageHeader />
       <main>
