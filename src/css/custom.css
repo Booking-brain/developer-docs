@@ -1157,6 +1157,120 @@ span[class*="openapi-schema__type"] {
 }
 
 /* ============================================================
+   API DOC CARDS — Replace emoji icons with method-colored borders
+   ============================================================ */
+
+/* Hide the default 📄️ emoji on API doc cards */
+.api-method [class*="cardTitle"] {
+  font-size: 0;
+  line-height: 0;
+}
+
+.api-method [class*="cardTitle"]::after {
+  content: attr(title);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--bb-gray-900);
+}
+
+[data-theme='dark'] .api-method [class*="cardTitle"]::after {
+  color: var(--bb-gray-900);
+}
+
+/* Method-colored left border on doc cards */
+.api-method[class*="cardContainer"] {
+  border-left: 3px solid var(--bb-method-get);
+  transition: all var(--bb-transition-base);
+}
+
+.api-method.get[class*="cardContainer"] {
+  border-left-color: var(--bb-method-get);
+}
+
+.api-method.post[class*="cardContainer"] {
+  border-left-color: var(--bb-method-post);
+}
+
+.api-method.put[class*="cardContainer"] {
+  border-left-color: var(--bb-method-put);
+}
+
+.api-method.delete[class*="cardContainer"] {
+  border-left-color: var(--bb-method-delete);
+}
+
+.api-method.patch[class*="cardContainer"] {
+  border-left-color: var(--bb-method-patch);
+}
+
+/* Card description styling */
+.api-method [class*="cardDescription"] {
+  color: var(--bb-gray-500);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   API ENDPOINT PAGES — Responsive layout fixes
+   ============================================================ */
+
+/* URL bar — allow horizontal scroll and word wrap */
+.openapi__method-endpoint {
+  overflow-x: auto;
+}
+
+.openapi__method-endpoint-path {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* Code samples panel — ensure scrollable */
+.openapi-right-panel__container pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Fix API page content columns to not overflow viewport */
+.openapi-left-panel__container,
+.openapi-right-panel__container {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* API pages — give right panel more room */
+@media screen and (min-width: 997px) and (max-width: 1400px) {
+  .openapi-left-panel__container.col--7 {
+    flex: 0 0 55%;
+    max-width: 55%;
+  }
+  .openapi-right-panel__container.col--5 {
+    flex: 0 0 45%;
+    max-width: 45%;
+  }
+}
+
+/* Stack API panels on narrower screens */
+@media screen and (max-width: 996px) {
+  .openapi-left-panel__container.col--7,
+  .openapi-right-panel__container.col--5 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  div[class*="docItemCol"] {
+    max-width: 100% !important;
+  }
+
+  .api-method[class*="cardContainer"] {
+    padding: 1.25rem !important;
+  }
+}
+
+/* ============================================================
    PRINT STYLES
    ============================================================ */
 @media print {
