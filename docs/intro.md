@@ -1,6 +1,7 @@
 ---
 id: intro
 title: Introduction
+description: Complete REST API documentation for Booking Brain — property search, availability, pricing, booking, and payment processing.
 sidebar_position: 1
 slug: /intro
 ---

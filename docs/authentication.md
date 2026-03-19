@@ -1,6 +1,7 @@
 ---
 id: authentication
 title: Authentication
+description: Learn how API key authentication works with the Booking Brain API, including sandbox vs production keys and security best practices.
 sidebar_position: 3
 ---
 

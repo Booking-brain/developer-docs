@@ -1,6 +1,7 @@
 ---
 id: ai-integration
 title: AI Agent Integration
+description: Connect AI agents and LLMs to the Booking Brain API using OpenAPI specs, function calling, and automated assistants.
 sidebar_position: 1
 ---
 

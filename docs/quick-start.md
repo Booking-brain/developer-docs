@@ -1,6 +1,7 @@
 ---
 id: quick-start
 title: Quick Start
+description: Make your first Booking Brain API call in under a minute with the public sandbox key. No sign-up required.
 sidebar_position: 2
 ---
 

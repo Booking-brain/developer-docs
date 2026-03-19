@@ -58,15 +58,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 100px;
-  padding: 0.35rem 1rem;
-  font-size: 0.8rem;
+  padding: 0.4rem 1.1rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 1.5rem;
-  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 1.75rem;
+  letter-spacing: 0.02em;
   backdrop-filter: blur(8px);
 }
 
@@ -93,7 +93,7 @@
 }
 
 .heroTitleAccent {
-  background: linear-gradient(135deg, #0ea5e9, #4da0d8);
+  background: linear-gradient(135deg, #38bdf8, #818cf8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -101,10 +101,10 @@
 
 .heroSubtitle {
   font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.65);
   max-width: 540px;
   margin: 0 auto 2.5rem;
-  line-height: 1.6;
+  line-height: 1.65;
   font-weight: 400;
 }
 
@@ -187,10 +187,10 @@
 
 .sectionSubtitle {
   font-size: 1.05rem;
-  color: var(--bb-gray-500, #6e6e73);
+  color: var(--bb-gray-600, #4a4a50);
   max-width: 580px;
   margin: 0 auto 3rem;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .featureGrid {
@@ -228,18 +228,13 @@
 }
 
 .featureIcon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1.25rem;
-}
-
-.featureIcon svg {
-  width: 24px;
-  height: 24px;
 }
 
 .featureIconBlue {
@@ -288,8 +283,8 @@
 
 .featureDescription {
   font-size: 0.9rem;
-  color: var(--bb-gray-500, #6e6e73);
-  line-height: 1.6;
+  color: var(--bb-gray-600, #4a4a50);
+  line-height: 1.65;
   margin: 0;
 }
 
@@ -335,7 +330,7 @@
 
 .codePreviewText p {
   font-size: 1rem;
-  color: var(--bb-gray-500, #6e6e73);
+  color: var(--bb-gray-600, #4a4a50);
   line-height: 1.7;
   margin-bottom: 1.5rem;
 }
@@ -495,10 +490,10 @@
 
 .ctaSubtitle {
   font-size: 1.05rem;
-  color: var(--bb-gray-500, #6e6e73);
+  color: var(--bb-gray-600, #4a4a50);
   max-width: 480px;
   margin: 0 auto 2rem;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .ctaButtons {
@@ -567,8 +562,8 @@
   }
 
   .featureGrid {
-    grid-template-columns: 1fr;
-    max-width: 480px;
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 680px;
   }
 
   .codePreviewInner {
@@ -589,6 +584,13 @@
   .codePreviewText h2,
   .ctaTitle {
     font-size: 1.7rem;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .featureGrid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
   }
 }
 

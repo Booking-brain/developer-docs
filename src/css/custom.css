@@ -238,7 +238,7 @@ h1, h2, h3, h4, h5, h6 {
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
-h1 { font-weight: 800; }
+h1 { font-weight: 800; letter-spacing: -0.03em; }
 h2 { font-weight: 700; }
 h3 { font-weight: 600; }
 
@@ -260,12 +260,12 @@ h3 { font-weight: 600; }
 }
 
 .markdown p {
-  color: var(--bb-gray-600);
+  color: var(--bb-gray-700);
   line-height: 1.75;
 }
 
 [data-theme='dark'] .markdown p {
-  color: var(--bb-gray-600);
+  color: var(--bb-gray-700);
 }
 
 /* Subtle link styling */
@@ -528,12 +528,14 @@ pre,
   line-height: 1.65 !important;
   padding: 1.25rem 1.5rem !important;
   border: 1px solid var(--bb-border-color);
+  box-shadow: var(--bb-shadow-sm);
 }
 
 [data-theme='dark'] pre,
 [data-theme='dark'] .prism-code {
   background: var(--bb-surface-code) !important;
   border-color: var(--bb-border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 code {
@@ -561,9 +563,10 @@ code {
 /* Code block copy button */
 .copyButtonCopied_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock-CopyButton-styles-module,
 button[class*="copyButton"] {
-  border-radius: var(--bb-radius-sm);
+  border-radius: var(--bb-radius-md);
   opacity: 0;
-  transition: opacity var(--bb-transition-fast);
+  transition: opacity var(--bb-transition-fast), background var(--bb-transition-fast);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 pre:hover button[class*="copyButton"],
@@ -575,15 +578,17 @@ div[class*="codeBlockContainer"]:hover button[class*="copyButton"] {
 div[class*="codeBlockTitle"] {
   background: var(--bb-surface-tertiary) !important;
   border-bottom: 1px solid var(--bb-border-color) !important;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
+  font-family: var(--ifm-font-family-monospace);
   color: var(--bb-gray-500);
   padding: 0.6rem 1.5rem !important;
   border-radius: var(--bb-radius-lg) var(--bb-radius-lg) 0 0 !important;
+  letter-spacing: 0.01em;
 }
 
 [data-theme='dark'] div[class*="codeBlockTitle"] {
-  background: rgba(255, 255, 255, 0.03) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
 }
 
 /* Code line highlighting */

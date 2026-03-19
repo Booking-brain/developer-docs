@@ -94,7 +94,31 @@ const config: Config = {
     ],
   ],
 
+  headTags: [
+    {
+      tagName: 'script',
+      attributes: {type: 'application/ld+json'},
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'Booking Brain Developer API',
+        url: 'https://docs.bookingbrain.com',
+        description: 'REST API documentation for Booking Brain — property search, availability, pricing, booking, and payment processing.',
+        publisher: {
+          '@type': 'Organization',
+          name: 'Booking Brain Ltd',
+          url: 'https://www.bookingbrain.com',
+        },
+      }),
+    },
+  ],
+
   themeConfig: {
+    metadata: [
+      {name: 'keywords', content: 'booking API, property API, holiday rental API, REST API, developer documentation, Booking Brain'},
+      {name: 'og:type', content: 'website'},
+      {name: 'twitter:card', content: 'summary_large_image'},
+    ],
     image: 'img/bookingbrain-social-card.jpg',
     colorMode: {
       defaultMode: 'light',

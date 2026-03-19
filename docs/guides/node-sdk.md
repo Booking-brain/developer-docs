@@ -1,6 +1,7 @@
 ---
 id: node-sdk
 title: Node.js SDK
+description: Official Node.js SDK for the Booking Brain API — full TypeScript support, zero dependencies, Node.js 18+ compatible.
 sidebar_position: 2
 ---
 
