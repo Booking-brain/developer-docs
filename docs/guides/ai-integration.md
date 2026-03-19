@@ -27,7 +27,7 @@ https://docs.bookingbrain.com/openapi.yaml
 ```
 
 Feed this to any tool that generates function definitions from OpenAPI specs. The spec includes:
-- All 22 endpoints with full parameter documentation
+- All 23 endpoints with full parameter documentation
 - Request body schemas for POST endpoints
 - Response schemas with field descriptions and examples
 - Code samples in 5 languages
@@ -325,6 +325,108 @@ For a comprehensive version suitable for ingesting the full API context:
 ```
 https://docs.bookingbrain.com/llms-full.txt
 ```
+
+## MCP Server (Model Context Protocol)
+
+The Booking Brain MCP server lets AI tools like **Claude Desktop**, **Claude Code**, and **Cursor** interact with the API natively -- no custom code needed. All 23 API endpoints are available as MCP tools.
+
+### What is MCP?
+
+[Model Context Protocol](https://modelcontextprotocol.io/) is an open standard for connecting AI assistants to external tools and data sources. Instead of writing custom function-calling code, you configure an MCP server and the AI can use all its tools directly.
+
+### Installation
+
+```bash
+# Clone or download the MCP server
+cd bb-mcp-server
+npm install
+npm run build
+```
+
+Or install from npm:
+
+```bash
+npm install -g @bookingbrain/mcp-server
+```
+
+### Configuration
+
+Add the server to your AI tool's MCP configuration:
+
+#### Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "booking-brain": {
+      "command": "node",
+      "args": ["/path/to/bb-mcp-server/dist/server.js"],
+      "env": {
+        "BB_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+#### Claude Code
+
+Add to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "booking-brain": {
+      "command": "node",
+      "args": ["/path/to/bb-mcp-server/dist/server.js"],
+      "env": {
+        "BB_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+#### Cursor
+
+Add to Cursor's MCP settings (`Settings > MCP Servers`):
+
+```json
+{
+  "booking-brain": {
+    "command": "node",
+    "args": ["/path/to/bb-mcp-server/dist/server.js"],
+    "env": {
+      "BB_API_KEY": "your_api_key_here"
+    }
+  }
+}
+```
+
+### Available tools
+
+Once configured, your AI assistant can use all 23 tools:
+
+| Group | Tools |
+|---|---|
+| **Property Search** | `searchProperties`, `getAllSpecialOffers` |
+| **Property Details** | `getPropertyById`, `getPropertyBySlug`, `getPropertyExtras`, `getPropertyReviews`, `getPropertyImages`, `getPropertyBedrooms` |
+| **Availability & Pricing** | `getUnavailableDates`, `getStartDays`, `getShortBreaks`, `getStartDates`, `calculatePrice`, `getAvailableNights` |
+| **Booking** | `createBooking`, `validateVoucher` |
+| **Payment** | `processPayment` |
+| **Places** | `getAllPlaces`, `getPropertiesByPlace` |
+| **Usage** | `getUsageStats`, `getUsageLogs` |
+| **Other** | `getOwnerContact`, `getPropertySpecialOffers` |
+
+### Example conversation
+
+Once the MCP server is connected, you can talk to your AI assistant naturally:
+
+> **You:** Find me a dog-friendly cottage in Porlock for 4 people, first week of August. How much would it cost?
+
+The AI will automatically call `searchProperties`, then `calculatePrice`, and present the results conversationally -- no code required.
 
 ## Tips for AI integration
 

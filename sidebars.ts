@@ -12,6 +12,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Guides',
       items: [
+        'guides/node-sdk',
         'guides/ai-integration',
       ],
     },

@@ -104,7 +104,8 @@ const config: Config = {
       title: 'Booking Brain',
       logo: {
         alt: 'Booking Brain Logo',
-        src: 'img/logo.svg',
+        src: 'img/booking-brain-logo.png',
+        height: 32,
       },
       items: [
         {
@@ -163,7 +164,7 @@ const config: Config = {
             },
             {
               label: 'Support',
-              href: 'mailto:support@bookingbrain.com',
+              href: 'mailto:support@bookingbrain.co.uk',
             },
             {
               label: 'GitHub',

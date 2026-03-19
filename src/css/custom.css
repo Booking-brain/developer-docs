@@ -12,11 +12,11 @@
    CSS VARIABLES — LIGHT MODE
    ============================================================ */
 :root {
-  /* Brand */
-  --bb-brand-primary: #1a73e8;
-  --bb-brand-primary-hover: #1557b0;
-  --bb-brand-primary-light: #e8f0fe;
-  --bb-brand-primary-subtle: #f0f6ff;
+  /* Brand — Booking Brain #015A9C */
+  --bb-brand-primary: #015A9C;
+  --bb-brand-primary-hover: #004A82;
+  --bb-brand-primary-light: #e6f0f8;
+  --bb-brand-primary-subtle: #f0f5fa;
 
   /* Neutrals */
   --bb-gray-50: #fafafa;
@@ -37,16 +37,16 @@
   --bb-warning-light: #fef3e6;
   --bb-danger: #df1b41;
   --bb-danger-light: #fde8ec;
-  --bb-info: #1a73e8;
-  --bb-info-light: #e8f0fe;
+  --bb-info: #015A9C;
+  --bb-info-light: #e6f0f8;
 
   /* HTTP Method Colors */
   --bb-method-get: #00a67d;
   --bb-method-get-bg: #e6f9f4;
   --bb-method-get-border: #b3ecd9;
-  --bb-method-post: #1a73e8;
-  --bb-method-post-bg: #e8f0fe;
-  --bb-method-post-border: #b3d4fc;
+  --bb-method-post: #015A9C;
+  --bb-method-post-bg: #e6f0f8;
+  --bb-method-post-border: #a3cde8;
   --bb-method-put: #e8912d;
   --bb-method-put-bg: #fef3e6;
   --bb-method-put-border: #fcd9a8;
@@ -70,8 +70,8 @@
   --bb-sidebar-text: #c1c4cf;
   --bb-sidebar-text-active: #ffffff;
   --bb-sidebar-hover-bg: rgba(255, 255, 255, 0.06);
-  --bb-sidebar-active-bg: rgba(26, 115, 232, 0.15);
-  --bb-sidebar-active-border: #1a73e8;
+  --bb-sidebar-active-bg: rgba(1, 90, 156, 0.15);
+  --bb-sidebar-active-border: #015A9C;
   --bb-sidebar-category-text: #8b8fa3;
   --bb-sidebar-width: 280px;
 
@@ -94,13 +94,13 @@
   --bb-transition-slow: 300ms ease;
 
   /* Infima overrides */
-  --ifm-color-primary: #1a73e8;
-  --ifm-color-primary-dark: #1765d1;
-  --ifm-color-primary-darker: #165fc5;
-  --ifm-color-primary-darkest: #124ea3;
-  --ifm-color-primary-light: #2d80eb;
-  --ifm-color-primary-lighter: #3987ec;
-  --ifm-color-primary-lightest: #5c9cef;
+  --ifm-color-primary: #015A9C;
+  --ifm-color-primary-dark: #015190;
+  --ifm-color-primary-darker: #004A82;
+  --ifm-color-primary-darkest: #003A6B;
+  --ifm-color-primary-light: #0D6BB5;
+  --ifm-color-primary-lighter: #1A7AC4;
+  --ifm-color-primary-lightest: #3D94D4;
 
   --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --ifm-font-family-monospace: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
@@ -131,17 +131,17 @@
   --ifm-table-border-color: var(--bb-border-color);
   --ifm-blockquote-border-color: var(--bb-brand-primary);
 
-  --docusaurus-highlighted-code-line-bg: rgba(26, 115, 232, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(1, 90, 156, 0.1);
 }
 
 /* ============================================================
    CSS VARIABLES — DARK MODE
    ============================================================ */
 [data-theme='dark'] {
-  --bb-brand-primary: #5b9cf6;
-  --bb-brand-primary-hover: #7db3f8;
-  --bb-brand-primary-light: #1c2a44;
-  --bb-brand-primary-subtle: #151e30;
+  --bb-brand-primary: #4da0d8;
+  --bb-brand-primary-hover: #6db8e8;
+  --bb-brand-primary-light: #0f2338;
+  --bb-brand-primary-subtle: #0c1a2b;
 
   --bb-gray-50: #161922;
   --bb-gray-100: #1c1f2b;
@@ -160,15 +160,15 @@
   --bb-warning-light: #2d2006;
   --bb-danger: #f87171;
   --bb-danger-light: #2d0f15;
-  --bb-info: #5b9cf6;
-  --bb-info-light: #1c2a44;
+  --bb-info: #4da0d8;
+  --bb-info-light: #0f2338;
 
   --bb-method-get: #34d399;
   --bb-method-get-bg: #0d2f25;
   --bb-method-get-border: #1a5c42;
-  --bb-method-post: #5b9cf6;
-  --bb-method-post-bg: #1c2a44;
-  --bb-method-post-border: #2c4a7a;
+  --bb-method-post: #4da0d8;
+  --bb-method-post-bg: #0f2338;
+  --bb-method-post-border: #1a4060;
   --bb-method-put: #fbbf24;
   --bb-method-put-bg: #2d2006;
   --bb-method-put-border: #5c4010;
@@ -190,8 +190,8 @@
   --bb-sidebar-text: #8b8fa3;
   --bb-sidebar-text-active: #f0f1f5;
   --bb-sidebar-hover-bg: rgba(255, 255, 255, 0.04);
-  --bb-sidebar-active-bg: rgba(91, 156, 246, 0.1);
-  --bb-sidebar-active-border: #5b9cf6;
+  --bb-sidebar-active-bg: rgba(77, 160, 216, 0.1);
+  --bb-sidebar-active-border: #4da0d8;
   --bb-sidebar-category-text: #5c6078;
 
   --bb-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -200,20 +200,20 @@
   --bb-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
   --bb-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.4);
 
-  --ifm-color-primary: #5b9cf6;
-  --ifm-color-primary-dark: #3a84f3;
-  --ifm-color-primary-darker: #2978f2;
-  --ifm-color-primary-darkest: #0c5dd8;
-  --ifm-color-primary-light: #7cb4f9;
-  --ifm-color-primary-lighter: #8dbdfa;
-  --ifm-color-primary-lightest: #bfd9fc;
+  --ifm-color-primary: #4da0d8;
+  --ifm-color-primary-dark: #3090c8;
+  --ifm-color-primary-darker: #2585bc;
+  --ifm-color-primary-darkest: #1a6b9a;
+  --ifm-color-primary-light: #6db8e8;
+  --ifm-color-primary-lighter: #80c3ec;
+  --ifm-color-primary-lightest: #a8d8f4;
 
   --ifm-background-color: var(--bb-surface-primary);
   --ifm-background-surface-color: var(--bb-surface-secondary);
   --ifm-navbar-background-color: rgba(19, 21, 30, 0.92);
   --ifm-footer-background-color: #0a0c12;
 
-  --docusaurus-highlighted-code-line-bg: rgba(91, 156, 246, 0.12);
+  --docusaurus-highlighted-code-line-bg: rgba(77, 160, 216, 0.12);
 }
 
 /* ============================================================
@@ -883,7 +883,7 @@ table tbody tr:hover {
 }
 
 .bb-card__icon--blue {
-  background: linear-gradient(135deg, #1a73e8, #4da3ff);
+  background: linear-gradient(135deg, #015A9C, #0ea5e9);
 }
 
 .bb-card__icon--green {

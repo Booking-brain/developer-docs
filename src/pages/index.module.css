@@ -7,7 +7,7 @@
    HERO SECTION
    ============================================================ */
 .heroBanner {
-  background: linear-gradient(135deg, #0f1729 0%, #1b2a4a 40%, #1a3d6d 70%, #1a73e8 100%);
+  background: linear-gradient(135deg, #0a1220 0%, #0f2338 40%, #014272 70%, #015A9C 100%);
   padding: 6rem 2rem 5rem;
   text-align: center;
   position: relative;
@@ -23,8 +23,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle at 25% 50%, rgba(26, 115, 232, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 75% 30%, rgba(77, 163, 255, 0.08) 0%, transparent 50%);
+    radial-gradient(circle at 25% 50%, rgba(1, 90, 156, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 75% 30%, rgba(14, 165, 233, 0.08) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -93,7 +93,7 @@
 }
 
 .heroTitleAccent {
-  background: linear-gradient(135deg, #5b9cf6, #a78bfa);
+  background: linear-gradient(135deg, #0ea5e9, #4da0d8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -118,7 +118,7 @@
 
 .heroPrimary {
   background: #ffffff !important;
-  color: #1a73e8 !important;
+  color: #015A9C !important;
   border: none !important;
   font-weight: 700 !important;
   padding: 0.75rem 2rem !important;
@@ -131,7 +131,7 @@
 .heroPrimary:hover {
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
-  color: #1557b0 !important;
+  color: #004A82 !important;
 }
 
 .heroSecondary {
@@ -169,7 +169,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--bb-brand-primary, #1a73e8);
+  color: var(--bb-brand-primary, #015A9C);
   margin-bottom: 0.75rem;
 }
 
@@ -243,11 +243,11 @@
 }
 
 .featureIconBlue {
-  background: linear-gradient(135deg, #e8f0fe, #d0e2fc);
+  background: linear-gradient(135deg, #e6f0f8, #c4ddf0);
 }
 
 [data-theme='dark'] .featureIconBlue {
-  background: linear-gradient(135deg, #1c2a44, #243556);
+  background: linear-gradient(135deg, #0f2338, #16304a);
 }
 
 .featureIconGreen {
@@ -510,14 +510,14 @@
 }
 
 .ctaPrimary {
-  background: var(--bb-brand-primary, #1a73e8) !important;
+  background: var(--bb-brand-primary, #015A9C) !important;
   color: #ffffff !important;
   border: none !important;
   font-weight: 700 !important;
   padding: 0.75rem 2rem !important;
   font-size: 0.95rem !important;
   border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+  box-shadow: 0 2px 8px rgba(1, 90, 156, 0.3);
   transition: all 200ms ease !important;
 }
 

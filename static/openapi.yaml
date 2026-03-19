@@ -6,8 +6,6 @@ info:
     name: Proprietary
     url: https://www.bookingbrain.com/terms
   description: |
-    # Booking Brain Developer API
-
     The Booking Brain Developer API gives you full programmatic access to holiday rental
     property search, availability, pricing, booking, and payment — everything you need
     to build a custom booking experience on top of the Booking Brain platform.

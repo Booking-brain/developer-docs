@@ -30,5 +30,10 @@ Thumbs.db
 *.swp
 *.swo
 
+# Firebase
+.firebase/
+.firebaserc
+firebase.json
+
 # Generated API docs are checked in for Vercel builds
 # Regenerate with: npx docusaurus gen-api-docs all
