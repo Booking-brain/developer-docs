@@ -1,0 +1,70 @@
+---
+id: get-usage-logs
+title: "Get paginated API usage logs"
+description: "Retrieve detailed, paginated API usage logs showing every request made by a client. Each log entry includes the endpoint called, response status, response time, and timestamp. Use this for debugging, auditing, and detailed usage analysis."
+sidebar_label: "Get paginated API usage logs"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: docs/api/booking-brain-developer-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get paginated API usage logs"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/developer/usage/logs"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retrieve detailed, paginated API usage logs showing every request made by a client. Each log entry includes the endpoint called, response status, response time, and timestamp. Use this for debugging, auditing, and detailed usage analysis.
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-usage-logs.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-usage-logs.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-usage-logs.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

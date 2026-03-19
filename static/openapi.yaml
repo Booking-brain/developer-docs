@@ -1,0 +1,4665 @@
+openapi: 3.0.3
+info:
+  title: Booking Brain Developer API
+  version: 1.0.0
+  license:
+    name: Proprietary
+    url: https://www.bookingbrain.com/terms
+  description: |
+    # Booking Brain Developer API
+
+    The Booking Brain Developer API gives you full programmatic access to holiday rental
+    property search, availability, pricing, booking, and payment — everything you need
+    to build a custom booking experience on top of the Booking Brain platform.
+
+    ## Authentication
+
+    Every request must include an `X-API-Key` header. Keys are issued per-client and
+    scoped to specific IP addresses and origins.
+
+    ```
+    X-API-Key: bb_sandbox_test_key_do_not_use_in_production
+    ```
+
+    **Sandbox keys** are available for development and testing. They return real search
+    and property data but will not create actual bookings or process payments.
+
+    ## Rate Limiting
+
+    Each API key has a configurable rate limit. When you exceed it, the API returns
+    `429 Too Many Requests` with a `Retry-After` header indicating how many seconds
+    to wait before retrying.
+
+    ## Pagination
+
+    List endpoints return paginated results. Use `page` (1-based) and `limit` query
+    parameters to navigate. Response metadata includes `total`, `page`, `limit`, and
+    `totalPages` (or equivalent fields).
+
+    ## Error Handling
+
+    All errors follow a consistent shape:
+
+    ```json
+    {
+      "statusCode": 403,
+      "message": "Forbidden",
+      "error": "Forbidden"
+    }
+    ```
+
+    Validation errors (422) return `message` as an array of human-readable strings.
+
+    ## Typical Booking Flow
+
+    1. **Search** — `GET /developer/search` to find properties
+    2. **Detail** — `GET /developer/properties/{id}` for full listing info
+    3. **Availability** — `GET /developer/properties/{id}/unavailableDates` to populate a calendar
+    4. **Pricing** — `POST /developer/properties/{id}/get-price` to calculate the total
+    5. **Book** — `POST /developer/bookings/save` to create the reservation
+    6. **Pay** — `POST /developer/bookings/processPayment` to charge the guest's card
+  contact:
+    name: Booking Brain Support
+    email: support@bookingbrain.co.uk
+    url: https://docs.bookingbrain.com
+
+servers:
+  - url: https://app.bookingbrain.com/api/v1
+    description: Production
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: Property Search
+    description: Search and discover holiday rental properties
+  - name: Property Details
+    description: Full property information, images, reviews, extras, and owner contact
+  - name: Availability & Pricing
+    description: Calendar availability, start days, short breaks, and price calculation
+  - name: Booking
+    description: Create bookings and validate discount vouchers
+  - name: Payment
+    description: Process card payments via the SagePay/Opayo gateway
+  - name: Places
+    description: Destination areas and location-based property listings
+  - name: Usage
+    description: API usage statistics and detailed request logs
+
+paths:
+  # ──────────────────────────────────────────────
+  # Property Search
+  # ──────────────────────────────────────────────
+
+  /developer/search:
+    get:
+      operationId: searchProperties
+      summary: Search properties with filters
+      description: >
+        Search holiday rental properties by location, dates, guest count, and amenities.
+        Returns paginated results with property summaries including title, price, images,
+        and availability. Use this as the starting point for any property discovery flow.
+      tags:
+        - Property Search
+      parameters:
+        - name: place
+          in: query
+          required: false
+          description: Place slug or name (e.g., "exmoor", "north-devon")
+          schema:
+            type: string
+          example: exmoor
+        - name: checkin
+          in: query
+          required: false
+          description: Check-in date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+          example: "2026-07-01"
+        - name: nights
+          in: query
+          required: false
+          description: Number of nights
+          schema:
+            type: integer
+            minimum: 1
+          example: 7
+        - name: guests
+          in: query
+          required: false
+          description: Number of guests
+          schema:
+            type: integer
+            minimum: 1
+          example: 4
+        - name: bedrooms
+          in: query
+          required: false
+          description: Minimum number of bedrooms
+          schema:
+            type: integer
+            minimum: 1
+          example: 2
+        - name: pets
+          in: query
+          required: false
+          description: '"yes" to filter pet-friendly properties only'
+          schema:
+            type: string
+            enum:
+              - "yes"
+          example: "yes"
+        - name: page
+          in: query
+          required: false
+          description: 'Page number (default: 1)'
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          description: 'Results per page (default: 20, max: 100)'
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          example: 20
+        - name: sort
+          in: query
+          required: false
+          description: 'Sort field: "price", "rating", or "title"'
+          schema:
+            type: string
+            enum:
+              - price
+              - rating
+              - title
+          example: price
+      responses:
+        "200":
+          description: Paginated list of properties matching the search criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResult"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&checkin=2026-07-01&nights=7&guests=4&page=1&limit=20" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&checkin=2026-07-01&nights=7&guests=4&page=1&limit=20",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/search",
+                params={
+                    "place": "exmoor",
+                    "checkin": "2026-07-01",
+                    "nights": 7,
+                    "guests": 4,
+                    "page": 1,
+                    "limit": 20,
+                },
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&checkin=2026-07-01&nights=7&guests=4&page=1&limit=20"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&checkin=2026-07-01&nights=7&guests=4&page=1&limit=20",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/specialoffers:
+    get:
+      operationId: getAllSpecialOffers
+      summary: Get special offers across all properties
+      description: >
+        Retrieve current special offers and promotional prices across all properties.
+        Returns discounted stays with check-in/check-out dates and offer prices.
+        Use this to highlight deals on a homepage or promotions page.
+      tags:
+        - Property Search
+      responses:
+        "200":
+          description: List of special offers across all properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpecialOffer"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/specialoffers" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/specialoffers",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/specialoffers",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/specialoffers"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/specialoffers",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  # ──────────────────────────────────────────────
+  # Property Details
+  # ──────────────────────────────────────────────
+
+  /developer/properties/{id}:
+    get:
+      operationId: getPropertyById
+      summary: Get property details by ID
+      description: >
+        Get full details for a specific property including title, description, location,
+        amenities, pricing information, and images. Use this after finding a property
+        via search to display its full listing page.
+      tags:
+        - Property Details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      responses:
+        "200":
+          description: Full property details including description, amenities, pricing, and location
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropertyDetailResponse"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/{placeSlug}/{propertySlug}:
+    get:
+      operationId: getPropertyBySlug
+      summary: Get property by place and property slug
+      description: >
+        Look up a property using its URL-friendly slugs (place and property). Returns
+        the same full detail as getPropertyById. Use this when you have a human-readable
+        URL like "/porlock/meadow-cottage" rather than a numeric ID.
+      tags:
+        - Property Details
+      parameters:
+        - name: placeSlug
+          in: path
+          required: true
+          description: Place slug (e.g., "porlock", "north-devon")
+          schema:
+            type: string
+          example: porlock
+        - name: propertySlug
+          in: path
+          required: true
+          description: Property slug (e.g., "meadow-cottage")
+          schema:
+            type: string
+          example: meadow-cottage
+      responses:
+        "200":
+          description: Full property details resolved from the slug pair
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropertyDetailResponse"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found for the given slug combination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/porlock/meadow-cottage" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/porlock/meadow-cottage",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/porlock/meadow-cottage",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/porlock/meadow-cottage"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/porlock/meadow-cottage",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/extras:
+    get:
+      operationId: getPropertyExtras
+      summary: Get property extras/add-ons
+      description: >
+        Retrieve bookable extras and add-ons for a property such as dogs, cots, high
+        chairs, and log baskets. Returns a map keyed by extra type with pricing and
+        quantity limits. Use this to display optional extras during the booking flow.
+      tags:
+        - Property Details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      responses:
+        "200":
+          description: Map of available extras keyed by extra_name_id, with pricing and quantity limits
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/Extra"
+                example:
+                  "1":
+                    id: 87
+                    property_id: 42
+                    extra_name_id: 1
+                    price: 25.00
+                    name: Dog
+                    max_num: 2
+                    per_night: false
+                    unit: per_stay
+                  "3":
+                    id: 89
+                    property_id: 42
+                    extra_name_id: 3
+                    price: 10.00
+                    name: Cot
+                    max_num: 1
+                    per_night: false
+                    unit: per_stay
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/extras" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/extras",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/extras",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/extras"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/extras",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/reviews:
+    get:
+      operationId: getPropertyReviews
+      summary: Get property reviews (paginated)
+      description: >
+        Retrieve published guest reviews for a property, ordered by most recent first.
+        Returns star ratings, sub-ratings (cleanliness, location, value), review text,
+        and guest name. Use this to display social proof on a property listing page.
+      tags:
+        - Property Details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+        - name: page
+          in: query
+          required: false
+          description: 'Page number (default: 1)'
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          description: 'Reviews per page (default: 10)'
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          example: 10
+      responses:
+        "200":
+          description: Paginated list of published reviews with ratings and review text
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the request was successful
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Review"
+                    description: Array of published reviews
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/reviews?page=1&limit=10" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/reviews?page=1&limit=10",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/reviews",
+                params={"page": 1, "limit": 10},
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/reviews?page=1&limit=10"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/reviews?page=1&limit=10",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/images:
+    get:
+      operationId: getPropertyImages
+      summary: Get property images
+      description: >
+        Retrieve all images for a property, split into legacy (original server) and GCS
+        (Google Cloud Storage) collections. Each image includes URLs, alt text, and
+        display ordering. Use this to build a photo gallery or carousel on the property page.
+      tags:
+        - Property Details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      responses:
+        "200":
+          description: Legacy and GCS images for the property, ordered by display position
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropertyImages"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/images" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/images",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/images",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/images"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/images",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/bedrooms:
+    get:
+      operationId: getPropertyBedrooms
+      summary: Get property bedroom information
+      description: >
+        Retrieve detailed bedroom configuration for a property including bed types and
+        sizes per room. Use this to display a bedroom breakdown on the property listing
+        page so guests can see sleeping arrangements.
+      tags:
+        - Property Details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      responses:
+        "200":
+          description: Array of bedroom configurations with bed types and counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bedroom_number:
+                      type: integer
+                      description: Bedroom number (1-based)
+                      example: 1
+                    bed_type:
+                      type: string
+                      description: Type of bed in this bedroom
+                      example: King
+                    bed_count:
+                      type: integer
+                      description: Number of beds of this type
+                      example: 1
+                    en_suite:
+                      type: boolean
+                      description: Whether this bedroom has an en-suite bathroom
+                      example: true
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/bedrooms" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/bedrooms",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/bedrooms",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/bedrooms"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/bedrooms",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/owner-contact:
+    get:
+      operationId: getOwnerContact
+      summary: Get property owner contact info
+      description: >
+        Retrieve the property owner's contact details including name, email, and phone
+        number. Use this to enable direct owner communication features or display owner
+        information on the listing. Returns null data if no owner is associated with the property.
+      tags:
+        - Property Details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      responses:
+        "200":
+          description: Owner contact details (name, email, phone) or null if no owner found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OwnerContactResponse"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/owner-contact" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/owner-contact",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/owner-contact",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/owner-contact"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/owner-contact",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/specialoffers:
+    get:
+      operationId: getPropertySpecialOffers
+      summary: Get special offers for a specific property
+      description: >
+        Retrieve current special offers and promotional prices for a single property.
+        Returns discounted date ranges with offer prices. Use this to highlight deals
+        on the property detail page or in a booking widget.
+      tags:
+        - Property Details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      responses:
+        "200":
+          description: List of active special offers for the property
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpecialOffer"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/specialoffers" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/specialoffers",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/specialoffers",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/specialoffers"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/specialoffers",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  # ──────────────────────────────────────────────
+  # Availability & Pricing
+  # ──────────────────────────────────────────────
+
+  /developer/properties/{id}/unavailableDates:
+    get:
+      operationId: getUnavailableDates
+      summary: Get unavailable dates for a property
+      description: >
+        Retrieve all dates that are unavailable (booked or blocked) for a property.
+        Returns an array of date strings that cannot be selected as check-in or stay
+        dates. Use this to grey out dates in a calendar/datepicker widget.
+      tags:
+        - Availability & Pricing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+        - name: year
+          in: query
+          required: false
+          description: Filter by year (optional)
+          schema:
+            type: string
+          example: "2026"
+        - name: month
+          in: query
+          required: false
+          description: Filter by month 1-12 (optional)
+          schema:
+            type: string
+          example: "7"
+      responses:
+        "200":
+          description: Array of unavailable date strings for the property calendar
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: date
+                example:
+                  - "2026-07-05"
+                  - "2026-07-06"
+                  - "2026-07-07"
+                  - "2026-07-08"
+                  - "2026-07-09"
+                  - "2026-07-10"
+                  - "2026-07-11"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/unavailableDates?year=2026&month=7" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/unavailableDates?year=2026&month=7",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/unavailableDates",
+                params={"year": "2026", "month": "7"},
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/unavailableDates?year=2026&month=7"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/unavailableDates?year=2026&month=7",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/startDays:
+    get:
+      operationId: getStartDays
+      summary: Get available start days for a property
+      description: >
+        Retrieve the days of the week on which new bookings can start for a property
+        (e.g., Friday and Saturday only). Returns day-of-week rules that restrict
+        check-in days. Use this to disable non-start days in your datepicker.
+      tags:
+        - Availability & Pricing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      responses:
+        "200":
+          description: Start day rules indicating which days of the week allow check-in
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Start day configuration — keys are day names, values are booleans
+                example:
+                  monday: false
+                  tuesday: false
+                  wednesday: false
+                  thursday: false
+                  friday: true
+                  saturday: true
+                  sunday: false
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/startDays" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/startDays",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/startDays",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/startDays"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/startDays",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/shortBreaks:
+    get:
+      operationId: getShortBreaks
+      summary: Get short break rules for a property
+      description: >
+        Retrieve short break configuration for a property including minimum night
+        requirements, allowed start days, and seasonal rules. Use this to determine
+        whether short stays (less than 7 nights) are available and on which dates.
+      tags:
+        - Availability & Pricing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      responses:
+        "200":
+          description: Short break rules including minimum nights and seasonal availability
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Short break configuration
+                example:
+                  short_breaks_enabled: true
+                  min_nights: 3
+                  allowed_start_days:
+                    - friday
+                    - saturday
+                  seasonal_rules:
+                    - season: low
+                      min_nights: 2
+                    - season: high
+                      min_nights: 7
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/shortBreaks" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/shortBreaks",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/shortBreaks",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/shortBreaks"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/shortBreaks",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/start-dates:
+    get:
+      operationId: getStartDates
+      summary: Get available start dates for next N months
+      description: >
+        Retrieve specific available check-in dates for a property over the next N months.
+        Unlike startDays (which returns day-of-week rules), this returns actual calendar
+        dates that are open for new bookings. Use this to populate an availability
+        calendar with selectable dates.
+      tags:
+        - Availability & Pricing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+        - name: months
+          in: query
+          required: false
+          description: 'Number of months to look ahead (default: 3)'
+          schema:
+            type: integer
+            default: 3
+          example: 3
+      responses:
+        "200":
+          description: Array of available start dates for the requested period
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the request was successful
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: string
+                      format: date
+                    description: Available check-in dates
+                    example:
+                      - "2026-07-04"
+                      - "2026-07-11"
+                      - "2026-07-18"
+                      - "2026-07-25"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/start-dates?months=3" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/start-dates?months=3",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/start-dates",
+                params={"months": 3},
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/start-dates?months=3"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/start-dates?months=3",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/get-price:
+    post:
+      operationId: calculatePrice
+      summary: Calculate price for a property stay
+      description: >
+        Calculate the total price for a property stay including any applicable discounts,
+        cleaning fees, and service fees. Returns the property charge, discount amount,
+        final total in GBP, number of nights, and price per night. A response code of 0
+        means available; non-zero codes indicate conflicts or restrictions. Call this
+        before creating a booking to show the guest accurate pricing.
+      tags:
+        - Availability & Pricing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PriceRequest"
+      responses:
+        "200":
+          description: Price calculation result with total, fees, discounts, and availability status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Price"
+        "400":
+          description: Bad request — malformed body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: Validation failed — check message array for details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/42/get-price" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "start_date": "2026-07-04",
+                "num_nights": 7,
+                "num_guests": 4
+              }'
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/get-price",
+              {
+                method: "POST",
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  start_date: "2026-07-04",
+                  num_nights: 7,
+                  num_guests: 4,
+                }),
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.post(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/get-price",
+                json={
+                    "start_date": "2026-07-04",
+                    "num_nights": 7,
+                    "num_guests": 4,
+                },
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var content = new StringContent(
+                "{\"start_date\":\"2026-07-04\",\"num_nights\":7,\"num_guests\":4}",
+                System.Text.Encoding.UTF8,
+                "application/json"
+            );
+            var response = await client.PostAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/get-price",
+                content
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/get-price",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                    "Content-Type: application/json",
+                ],
+                CURLOPT_POSTFIELDS => json_encode([
+                    "start_date" => "2026-07-04",
+                    "num_nights" => 7,
+                    "num_guests" => 4,
+                ]),
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/properties/{id}/available-nights:
+    post:
+      operationId: getAvailableNights
+      summary: Get available nights from a check-in date
+      description: >
+        Given a check-in date, returns the valid night durations available for a property
+        (e.g., 3, 4, 7, 14 nights). Takes into account subsequent bookings, minimum stay
+        rules, and short break configuration. Use this to populate a "number of nights"
+        dropdown after the guest selects a check-in date.
+      tags:
+        - Availability & Pricing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Property ID
+          schema:
+            type: integer
+          example: 42
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvailableNightsRequest"
+      responses:
+        "200":
+          description: Array of valid night durations available from the given check-in date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                example:
+                  - 3
+                  - 4
+                  - 7
+                  - 10
+                  - 14
+        "400":
+          description: Bad request — malformed body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: Validation failed — check message array for details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/42/available-nights" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+              -H "Content-Type: application/json" \
+              -d '{"checkin_date": "2026-07-04"}'
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/properties/42/available-nights",
+              {
+                method: "POST",
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ checkin_date: "2026-07-04" }),
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.post(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/available-nights",
+                json={"checkin_date": "2026-07-04"},
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var content = new StringContent(
+                "{\"checkin_date\":\"2026-07-04\"}",
+                System.Text.Encoding.UTF8,
+                "application/json"
+            );
+            var response = await client.PostAsync(
+                "https://app.bookingbrain.com/api/v1/developer/properties/42/available-nights",
+                content
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/properties/42/available-nights",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                    "Content-Type: application/json",
+                ],
+                CURLOPT_POSTFIELDS => json_encode(["checkin_date" => "2026-07-04"]),
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  # ──────────────────────────────────────────────
+  # Booking
+  # ──────────────────────────────────────────────
+
+  /developer/bookings/save:
+    post:
+      operationId: createBooking
+      summary: Submit a booking
+      description: >
+        Submit a new booking with guest details, dates, and pricing. The booking is
+        attributed to your API key's client name for tracking in the admin dashboard.
+        In sandbox mode, returns a mock response without creating an actual booking.
+        Always call calculatePrice first to get the correct property_charge before submitting.
+      tags:
+        - Booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingRequest"
+      responses:
+        "200":
+          description: Booking confirmation with booking ID, status, and guest details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingResult"
+        "400":
+          description: Bad request — malformed body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: Validation failed — check message array for details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/save" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "property_id": 42,
+                "checkin": "2026-07-04",
+                "checkout": "2026-07-11",
+                "nights": 7,
+                "guests": 4,
+                "property_charge": 895.00,
+                "User": {
+                  "first_name": "Sarah",
+                  "last_name": "Thompson",
+                  "email": "sarah.thompson@example.co.uk",
+                  "phone": "+44 7700 900123",
+                  "address": "14 Harbour View",
+                  "city": "Bristol",
+                  "country": "United Kingdom"
+                }
+              }'
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/bookings/save",
+              {
+                method: "POST",
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  property_id: 42,
+                  checkin: "2026-07-04",
+                  checkout: "2026-07-11",
+                  nights: 7,
+                  guests: 4,
+                  property_charge: 895.0,
+                  User: {
+                    first_name: "Sarah",
+                    last_name: "Thompson",
+                    email: "sarah.thompson@example.co.uk",
+                    phone: "+44 7700 900123",
+                    address: "14 Harbour View",
+                    city: "Bristol",
+                    country: "United Kingdom",
+                  },
+                }),
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.post(
+                "https://app.bookingbrain.com/api/v1/developer/bookings/save",
+                json={
+                    "property_id": 42,
+                    "checkin": "2026-07-04",
+                    "checkout": "2026-07-11",
+                    "nights": 7,
+                    "guests": 4,
+                    "property_charge": 895.00,
+                    "User": {
+                        "first_name": "Sarah",
+                        "last_name": "Thompson",
+                        "email": "sarah.thompson@example.co.uk",
+                        "phone": "+44 7700 900123",
+                        "address": "14 Harbour View",
+                        "city": "Bristol",
+                        "country": "United Kingdom",
+                    },
+                },
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var json = @"{
+              ""property_id"": 42,
+              ""checkin"": ""2026-07-04"",
+              ""checkout"": ""2026-07-11"",
+              ""nights"": 7,
+              ""guests"": 4,
+              ""property_charge"": 895.00,
+              ""User"": {
+                ""first_name"": ""Sarah"",
+                ""last_name"": ""Thompson"",
+                ""email"": ""sarah.thompson@example.co.uk"",
+                ""phone"": ""+44 7700 900123"",
+                ""address"": ""14 Harbour View"",
+                ""city"": ""Bristol"",
+                ""country"": ""United Kingdom""
+              }
+            }";
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(
+                "https://app.bookingbrain.com/api/v1/developer/bookings/save",
+                content
+            );
+            Console.WriteLine(await response.Content.ReadAsStringAsync());
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/bookings/save",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                    "Content-Type: application/json",
+                ],
+                CURLOPT_POSTFIELDS => json_encode([
+                    "property_id" => 42,
+                    "checkin" => "2026-07-04",
+                    "checkout" => "2026-07-11",
+                    "nights" => 7,
+                    "guests" => 4,
+                    "property_charge" => 895.00,
+                    "User" => [
+                        "first_name" => "Sarah",
+                        "last_name" => "Thompson",
+                        "email" => "sarah.thompson@example.co.uk",
+                        "phone" => "+44 7700 900123",
+                        "address" => "14 Harbour View",
+                        "city" => "Bristol",
+                        "country" => "United Kingdom",
+                    ],
+                ]),
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/bookings/validate-voucher:
+    post:
+      operationId: validateVoucher
+      summary: Validate a discount voucher
+      description: >
+        Validate a voucher code against a specific property, stay dates, and total price.
+        Returns whether the voucher is valid, the discount type and amount, and the
+        updated total price after discount. Use this in the booking flow to let guests
+        apply promo codes before payment.
+      tags:
+        - Booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoucherRequest"
+      responses:
+        "200":
+          description: Voucher validation result with discount details and adjusted price
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoucherResult"
+        "400":
+          description: Bad request — malformed body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: Validation failed — check message array for details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/validate-voucher" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "voucher_code": "SUMMER20",
+                "property_id": 42,
+                "num_nights": 7,
+                "checkin_date": "2026-07-04",
+                "total_price": 895.00,
+                "guest_email": "sarah.thompson@example.co.uk"
+              }'
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/bookings/validate-voucher",
+              {
+                method: "POST",
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  voucher_code: "SUMMER20",
+                  property_id: 42,
+                  num_nights: 7,
+                  checkin_date: "2026-07-04",
+                  total_price: 895.0,
+                  guest_email: "sarah.thompson@example.co.uk",
+                }),
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.post(
+                "https://app.bookingbrain.com/api/v1/developer/bookings/validate-voucher",
+                json={
+                    "voucher_code": "SUMMER20",
+                    "property_id": 42,
+                    "num_nights": 7,
+                    "checkin_date": "2026-07-04",
+                    "total_price": 895.00,
+                    "guest_email": "sarah.thompson@example.co.uk",
+                },
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var content = new StringContent(
+                @"{""voucher_code"":""SUMMER20"",""property_id"":42,""num_nights"":7,""checkin_date"":""2026-07-04"",""total_price"":895.00,""guest_email"":""sarah.thompson@example.co.uk""}",
+                System.Text.Encoding.UTF8,
+                "application/json"
+            );
+            var response = await client.PostAsync(
+                "https://app.bookingbrain.com/api/v1/developer/bookings/validate-voucher",
+                content
+            );
+            Console.WriteLine(await response.Content.ReadAsStringAsync());
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/bookings/validate-voucher",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                    "Content-Type: application/json",
+                ],
+                CURLOPT_POSTFIELDS => json_encode([
+                    "voucher_code" => "SUMMER20",
+                    "property_id" => 42,
+                    "num_nights" => 7,
+                    "checkin_date" => "2026-07-04",
+                    "total_price" => 895.00,
+                    "guest_email" => "sarah.thompson@example.co.uk",
+                ]),
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  # ──────────────────────────────────────────────
+  # Payment
+  # ──────────────────────────────────────────────
+
+  /developer/bookings/processPayment:
+    post:
+      operationId: processPayment
+      summary: Process a payment via SagePay
+      description: >
+        Process a card payment for an existing booking via the SagePay/Opayo gateway.
+        Returns either a success confirmation or a 3D Secure redirect URL if additional
+        cardholder authentication is required. Sandbox API keys cannot process real
+        payments and will receive an error. Card details are transmitted securely and
+        never stored.
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+      responses:
+        "200":
+          description: Payment result — either success confirmation or 3DS redirect details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResult"
+        "400":
+          description: Bad request — malformed body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: Validation failed — check message array for details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/processPayment" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "booking_id": 28456,
+                "card_holder": "Sarah Thompson",
+                "card_number": "4929000000006",
+                "expiry_date": "1228",
+                "security_code": "123",
+                "amount": 895.00,
+                "payment_type": "full"
+              }'
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/bookings/processPayment",
+              {
+                method: "POST",
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  booking_id: 28456,
+                  card_holder: "Sarah Thompson",
+                  card_number: "4929000000006",
+                  expiry_date: "1228",
+                  security_code: "123",
+                  amount: 895.0,
+                  payment_type: "full",
+                }),
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.post(
+                "https://app.bookingbrain.com/api/v1/developer/bookings/processPayment",
+                json={
+                    "booking_id": 28456,
+                    "card_holder": "Sarah Thompson",
+                    "card_number": "4929000000006",
+                    "expiry_date": "1228",
+                    "security_code": "123",
+                    "amount": 895.00,
+                    "payment_type": "full",
+                },
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var content = new StringContent(
+                @"{""booking_id"":28456,""card_holder"":""Sarah Thompson"",""card_number"":""4929000000006"",""expiry_date"":""1228"",""security_code"":""123"",""amount"":895.00,""payment_type"":""full""}",
+                System.Text.Encoding.UTF8,
+                "application/json"
+            );
+            var response = await client.PostAsync(
+                "https://app.bookingbrain.com/api/v1/developer/bookings/processPayment",
+                content
+            );
+            Console.WriteLine(await response.Content.ReadAsStringAsync());
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/bookings/processPayment",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                    "Content-Type: application/json",
+                ],
+                CURLOPT_POSTFIELDS => json_encode([
+                    "booking_id" => 28456,
+                    "card_holder" => "Sarah Thompson",
+                    "card_number" => "4929000000006",
+                    "expiry_date" => "1228",
+                    "security_code" => "123",
+                    "amount" => 895.00,
+                    "payment_type" => "full",
+                ]),
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  # ──────────────────────────────────────────────
+  # Places
+  # ──────────────────────────────────────────────
+
+  /developer/places:
+    get:
+      operationId: getAllPlaces
+      summary: Get all property places/locations
+      description: >
+        Retrieve all active destination areas (places) where properties are listed.
+        Returns place names, slugs, coordinates, cover photos, and descriptions. Use
+        this to build a location picker, homepage destination grid, or map-based navigation.
+      tags:
+        - Places
+      responses:
+        "200":
+          description: List of all active places with names, slugs, coordinates, and cover photos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlacesResponse"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/places" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/places",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/places",
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/places"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/places",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/places/{slug}:
+    get:
+      operationId: getPropertiesByPlace
+      summary: Get properties by place slug
+      description: >
+        Retrieve all properties within a specific place/destination area, with optional
+        filters for guests, check-in date, and number of nights. Returns paginated
+        property summaries. Use this to build a destination landing page showing all
+        available properties in an area.
+      tags:
+        - Places
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Place slug (e.g., "porlock", "north-devon", "exmoor")
+          schema:
+            type: string
+          example: porlock
+        - name: guests
+          in: query
+          required: false
+          description: Number of guests to filter by
+          schema:
+            type: integer
+            minimum: 1
+          example: 4
+        - name: checkin
+          in: query
+          required: false
+          description: Check-in date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+          example: "2026-07-01"
+        - name: nights
+          in: query
+          required: false
+          description: Number of nights
+          schema:
+            type: integer
+            minimum: 1
+          example: 7
+        - name: page
+          in: query
+          required: false
+          description: 'Page number (default: 1)'
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          description: 'Results per page (default: 20)'
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          example: 20
+      responses:
+        "200":
+          description: Paginated list of properties in the specified place
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the request was successful
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PropertySummary"
+                    description: Array of property summaries
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Place not found for the given slug
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/places/porlock?guests=4&checkin=2026-07-01&nights=7" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/places/porlock?guests=4&checkin=2026-07-01&nights=7",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/places/porlock",
+                params={"guests": 4, "checkin": "2026-07-01", "nights": 7},
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/places/porlock?guests=4&checkin=2026-07-01&nights=7"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/places/porlock?guests=4&checkin=2026-07-01&nights=7",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  # ──────────────────────────────────────────────
+  # Usage
+  # ──────────────────────────────────────────────
+
+  /developer/usage/stats:
+    get:
+      operationId: getUsageStats
+      summary: Get API usage statistics for a client
+      description: >
+        Retrieve aggregated API usage statistics for a specific client, optionally
+        filtered by date range. Returns call counts, endpoint breakdowns, and error
+        rates. Use this to monitor your integration's API consumption and identify
+        usage patterns.
+      tags:
+        - Usage
+      parameters:
+        - name: client_id
+          in: query
+          required: true
+          description: Client ID to retrieve usage stats for
+          schema:
+            type: string
+          example: "1"
+        - name: start_date
+          in: query
+          required: false
+          description: Start date for the stats period (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+          example: "2026-03-01"
+        - name: end_date
+          in: query
+          required: false
+          description: End date for the stats period (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+          example: "2026-03-19"
+      responses:
+        "200":
+          description: Aggregated usage statistics including call counts and endpoint breakdowns
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the request was successful
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      total_calls:
+                        type: integer
+                        description: Total number of API calls in the period
+                        example: 1247
+                      period:
+                        type: object
+                        properties:
+                          start_date:
+                            type: string
+                            format: date
+                            description: Start of the reporting period
+                            example: "2026-03-01"
+                          end_date:
+                            type: string
+                            format: date
+                            description: End of the reporting period
+                            example: "2026-03-19"
+                      endpoints:
+                        type: object
+                        description: Call counts broken down by endpoint
+                        additionalProperties:
+                          type: integer
+                        example:
+                          GET /developer/search: 456
+                          GET /developer/properties/{id}: 312
+                          POST /developer/properties/{id}/get-price: 189
+                      error_count:
+                        type: integer
+                        description: Number of requests that returned an error status
+                        example: 23
+                      error_rate:
+                        type: number
+                        format: float
+                        description: Error rate as a percentage
+                        example: 1.84
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/usage/stats?client_id=1&start_date=2026-03-01&end_date=2026-03-19" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/usage/stats?client_id=1&start_date=2026-03-01&end_date=2026-03-19",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/usage/stats",
+                params={"client_id": "1", "start_date": "2026-03-01", "end_date": "2026-03-19"},
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/usage/stats?client_id=1&start_date=2026-03-01&end_date=2026-03-19"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/usage/stats?client_id=1&start_date=2026-03-01&end_date=2026-03-19",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+  /developer/usage/logs:
+    get:
+      operationId: getUsageLogs
+      summary: Get paginated API usage logs
+      description: >
+        Retrieve detailed, paginated API usage logs showing every request made by a
+        client. Each log entry includes the endpoint called, response status, response
+        time, and timestamp. Use this for debugging, auditing, and detailed usage analysis.
+      tags:
+        - Usage
+      parameters:
+        - name: client_id
+          in: query
+          required: false
+          description: Filter by client ID
+          schema:
+            type: integer
+          example: 1
+        - name: endpoint
+          in: query
+          required: false
+          description: Filter by endpoint path
+          schema:
+            type: string
+          example: /developer/search
+        - name: property_id
+          in: query
+          required: false
+          description: Filter by property ID
+          schema:
+            type: integer
+          example: 42
+        - name: start_date
+          in: query
+          required: false
+          description: Start date (ISO format)
+          schema:
+            type: string
+            format: date
+          example: "2026-03-01"
+        - name: end_date
+          in: query
+          required: false
+          description: End date (ISO format)
+          schema:
+            type: string
+            format: date
+          example: "2026-03-31"
+        - name: page
+          in: query
+          required: false
+          description: 'Page number (default: 1)'
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          description: 'Items per page (default: 50)'
+          schema:
+            type: integer
+            minimum: 1
+            default: 50
+          example: 50
+      responses:
+        "200":
+          description: Paginated list of individual API call log entries with request/response details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the request was successful
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: Log entry ID
+                          example: 98765
+                        client_id:
+                          type: integer
+                          description: Client that made the request
+                          example: 1
+                        endpoint:
+                          type: string
+                          description: API endpoint called
+                          example: GET /developer/search
+                        status_code:
+                          type: integer
+                          description: HTTP response status code
+                          example: 200
+                        response_time_ms:
+                          type: integer
+                          description: Response time in milliseconds
+                          example: 142
+                        property_id:
+                          type: integer
+                          description: Property ID if applicable
+                          example: 42
+                          nullable: true
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: When the request was made
+                          example: "2026-03-19T14:32:15.000Z"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "403":
+          description: Invalid API key, IP not whitelisted, or origin not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded — check Retry-After header
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitError"
+      x-codeSamples:
+        - lang: cURL
+          label: cURL
+          source: |
+            curl -X GET "https://app.bookingbrain.com/api/v1/developer/usage/logs?client_id=1&start_date=2026-03-01&page=1&limit=50" \
+              -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+        - lang: JavaScript
+          label: JavaScript
+          source: |
+            const response = await fetch(
+              "https://app.bookingbrain.com/api/v1/developer/usage/logs?client_id=1&start_date=2026-03-01&page=1&limit=50",
+              {
+                headers: {
+                  "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
+                },
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+
+            response = requests.get(
+                "https://app.bookingbrain.com/api/v1/developer/usage/logs",
+                params={"client_id": 1, "start_date": "2026-03-01", "page": 1, "limit": 50},
+                headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+            )
+            print(response.json())
+        - lang: C#
+          label: C#
+          source: |
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-API-Key", "bb_sandbox_test_key_do_not_use_in_production");
+
+            var response = await client.GetAsync(
+                "https://app.bookingbrain.com/api/v1/developer/usage/logs?client_id=1&start_date=2026-03-01&page=1&limit=50"
+            );
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(json);
+        - lang: PHP
+          label: PHP
+          source: |
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "https://app.bookingbrain.com/api/v1/developer/usage/logs?client_id=1&start_date=2026-03-01&page=1&limit=50",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "X-API-Key: bb_sandbox_test_key_do_not_use_in_production",
+                ],
+            ]);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            echo $response;
+
+# ════════════════════════════════════════════════
+# Components
+# ════════════════════════════════════════════════
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: >
+        API key issued per client. Include in every request as the `X-API-Key` header.
+        Sandbox keys (prefixed `bb_sandbox_`) return real data but cannot create
+        bookings or process payments.
+
+  schemas:
+    # ────────────────────────────────────────────
+    # Error Responses
+    # ────────────────────────────────────────────
+
+    Error:
+      type: object
+      description: Standard error response returned by all endpoints when a request fails (4xx/5xx)
+      required:
+        - statusCode
+        - message
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code indicating the type of error
+          example: 403
+        message:
+          description: Human-readable error message, or an array of validation error strings for 422 responses
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          example: Forbidden
+        error:
+          type: string
+          description: Short error label matching the HTTP status text
+          example: Forbidden
+
+    RateLimitError:
+      type: object
+      description: Error response returned when a client exceeds their configured rate limit
+      required:
+        - statusCode
+        - message
+        - retryAfter
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP 429 status code
+          example: 429
+        message:
+          type: string
+          description: Rate limit exceeded message
+          example: Too Many Requests
+        retryAfter:
+          type: integer
+          description: Number of seconds the client should wait before retrying
+          example: 45
+
+    # ────────────────────────────────────────────
+    # Pagination
+    # ────────────────────────────────────────────
+
+    PaginationMeta:
+      type: object
+      description: Pagination metadata returned alongside paginated list endpoints
+      required:
+        - total
+        - page
+        - limit
+        - totalPages
+      properties:
+        total:
+          type: integer
+          description: Total number of records matching the query
+          example: 74
+        page:
+          type: integer
+          description: Current page number (1-based)
+          example: 1
+        limit:
+          type: integer
+          description: Maximum number of records returned per page
+          example: 20
+        totalPages:
+          type: integer
+          description: Total number of pages available
+          example: 4
+
+    # ────────────────────────────────────────────
+    # Property Search
+    # ────────────────────────────────────────────
+
+    PropertySummary:
+      type: object
+      description: Property as it appears in search results — a lightweight representation with the key fields needed for listing cards
+      required:
+        - id
+        - title
+        - slug
+        - is_pets
+        - status
+      properties:
+        id:
+          type: integer
+          description: Unique property identifier
+          example: 312
+        title:
+          type: string
+          description: Display title of the property
+          example: Meadow Cottage
+        slug:
+          type: string
+          description: URL-safe slug for the property
+          example: meadow-cottage
+        property_place_slug:
+          type: string
+          description: Name of the place / destination area
+          example: porlock
+        bed_rooms:
+          type: integer
+          description: Number of bedrooms
+          example: 3
+        total_guest:
+          type: integer
+          description: Maximum number of guests the property sleeps
+          example: 6
+        bath_rooms:
+          type: integer
+          description: Number of bathrooms
+          example: 2
+        is_pets:
+          type: boolean
+          description: Whether the property accepts pets
+          example: true
+        status:
+          type: string
+          description: Property listing status
+          enum:
+            - active
+            - inactive
+          example: active
+        min_price:
+          type: number
+          format: float
+          description: Lowest available price per week in GBP
+          example: 595.00
+        price_per_night:
+          type: number
+          format: float
+          description: Price per night in GBP (for nightly-priced properties)
+          example: 85.00
+        price_per_week:
+          type: number
+          format: float
+          description: Price per week in GBP
+          example: 850.00
+        apply_price:
+          type: string
+          description: How the property is priced
+          enum:
+            - nightly
+            - weekly
+            - monthly
+            - fixed
+          example: nightly
+        thumbnailUrl:
+          type: string
+          description: URL of the main thumbnail image
+          example: 'https://storage.googleapis.com/bb-property-images/properties/312/meadow-cottage-main.jpg'
+        latitude:
+          type: number
+          format: double
+          description: Latitude coordinate
+          example: 51.2089
+        longitude:
+          type: number
+          format: double
+          description: Longitude coordinate
+          example: -3.5915
+        search_summary:
+          type: string
+          description: Short summary shown in search result cards
+          example: A charming thatched cottage with stunning views across Porlock Vale to the Bristol Channel.
+        rating:
+          type: number
+          format: float
+          description: Average review rating (when included by the search service)
+          example: 4.7
+
+    SearchResult:
+      type: object
+      description: Paginated search result returned by GET /developer/search
+      required:
+        - properties
+        - total_property_on_search
+        - current_page
+        - num_pages
+        - perpage
+      properties:
+        properties:
+          type: array
+          items:
+            $ref: "#/components/schemas/PropertySummary"
+          description: Array of properties matching the search criteria
+        total_property_on_search:
+          type: integer
+          description: Total number of properties matching the search (before pagination)
+          example: 74
+        current_page:
+          type: integer
+          description: Current page number (1-based)
+          example: 1
+        num_pages:
+          type: integer
+          description: Total number of pages available
+          example: 4
+        perpage:
+          type: integer
+          description: Number of properties returned per page
+          example: 20
+        property_place_type:
+          type: array
+          items:
+            type: object
+          description: Place types available for filtering (used by the frontend facets)
+        filter_array_values:
+          type: object
+          description: Applied filter values for the current search
+        search_query_string:
+          type: string
+          description: Serialised search query parameters as a JSON string
+          example: '{"checkin":"Fri 4 Jul 26","booking_nights":7,"guests":4,"place":"exmoor"}'
+        property_checkin:
+          type: string
+          description: Check-in date that was searched
+          example: Fri 4 Jul 26
+        property_booking_nights:
+          type: integer
+          description: Number of booking nights that was searched
+          example: 7
+        property_guests:
+          type: integer
+          description: Number of guests that was searched
+          example: 4
+        propertyRating:
+          type: object
+          description: Property ratings keyed by property ID
+        marker_array:
+          type: string
+          description: JSON string of map marker coordinates for the result set
+          example: '[{"id":312,"lat":51.2089,"lng":-3.5915,"title":"Meadow Cottage"}]'
+
+    # ────────────────────────────────────────────
+    # Property Detail
+    # ────────────────────────────────────────────
+
+    PropertyDetail:
+      type: object
+      description: Full property detail containing everything needed to render a complete property page
+      required:
+        - id
+        - title
+        - slug
+        - is_pets
+        - status
+        - live
+        - online
+        - modified
+      properties:
+        id:
+          type: integer
+          description: Unique property identifier
+          example: 312
+        title:
+          type: string
+          description: Display title of the property
+          example: Meadow Cottage
+        slug:
+          type: string
+          description: URL-safe slug for the property
+          example: meadow-cottage
+        address:
+          type: string
+          description: Full street address of the property
+          example: "Porlock Hill, Porlock, Somerset TA24 8HD"
+        city:
+          type: string
+          description: City or village name
+          example: Porlock
+        state:
+          type: string
+          description: County / state
+          example: Somerset
+        country:
+          type: string
+          description: Country
+          example: United Kingdom
+        zip_code:
+          type: string
+          description: Postcode / ZIP code
+          example: TA24 8HD
+        latitude:
+          type: number
+          format: double
+          description: Latitude coordinate for map placement
+          example: 51.2089
+        longitude:
+          type: number
+          format: double
+          description: Longitude coordinate for map placement
+          example: -3.5915
+        description:
+          type: string
+          description: Full editorial description of the property
+          example: "Meadow Cottage is a beautifully restored thatched cottage nestled in the heart of Porlock. With three bedrooms, a cosy wood burner, and a private garden, it offers the perfect retreat for families exploring Exmoor National Park."
+        things_to_do:
+          type: string
+          description: Things to do near the property
+          example: "Walk the South West Coast Path from Porlock Weir to Lynmouth, visit Dunster Castle, or explore the Exmoor Dark Skies reserve."
+        food_and_drinks:
+          type: string
+          description: Nearby food and drink recommendations
+          example: "The Whortleberry Tea Room in Porlock is a 5-minute walk. The Ship Inn at Porlock Weir serves excellent local seafood."
+        walk_and_beaches:
+          type: string
+          description: Walking routes and beach information
+          example: "Porlock Weir beach is a 10-minute drive. For sandy beaches, Minehead is 15 minutes away."
+        search_summary:
+          type: string
+          description: Short summary used in search results
+          example: A charming thatched cottage with stunning views across Porlock Vale to the Bristol Channel.
+        bed_rooms:
+          type: integer
+          description: Number of bedrooms
+          example: 3
+        total_guest:
+          type: integer
+          description: Maximum number of guests the property sleeps
+          example: 6
+        additional_guest:
+          type: integer
+          description: Number of additional guests allowed above the base rate
+          example: 4
+        free_guest:
+          type: integer
+          description: Number of guests included in the base price
+          example: 4
+        single_beds:
+          type: integer
+          description: Number of single beds
+          example: 2
+        double_beds:
+          type: integer
+          description: Number of double beds
+          example: 1
+        king_beds:
+          type: integer
+          description: Number of king-size beds
+          example: 1
+        sofa_beds:
+          type: integer
+          description: Number of sofa beds
+          example: 0
+        cots:
+          type: integer
+          description: Number of cots available
+          example: 1
+        bath_rooms:
+          type: integer
+          description: Total number of bathrooms
+          example: 2
+        family_bathrooms:
+          type: integer
+          description: Number of family bathrooms
+          example: 1
+        en_suites:
+          type: integer
+          description: Number of en-suite bathrooms
+          example: 1
+        shower_rooms:
+          type: integer
+          description: Number of separate shower rooms
+          example: 0
+        price_per_night:
+          type: number
+          format: float
+          description: Base price per night in GBP
+          example: 85.00
+        price_per_week:
+          type: number
+          format: float
+          description: Base price per week in GBP
+          example: 850.00
+        min_price:
+          type: number
+          format: float
+          description: Lowest available price in GBP
+          example: 595.00
+        apply_price:
+          type: string
+          description: How the property is priced
+          enum:
+            - nightly
+            - weekly
+            - monthly
+            - fixed
+          example: nightly
+        additional_guest_price:
+          type: number
+          format: float
+          description: Additional guest price per night in GBP
+          example: 15.00
+        security_deposit:
+          type: number
+          format: float
+          description: Refundable security deposit in GBP
+          example: 150.00
+        security_deposit_info:
+          type: string
+          description: Security deposit terms
+          example: Returned within 7 days of departure subject to inspection.
+        is_pets:
+          type: boolean
+          description: Whether the property accepts pets
+          example: true
+        amenities_set:
+          type: string
+          description: Comma-separated amenity IDs
+          example: "1,3,5,12,18"
+        holiday_types_set:
+          type: string
+          description: Comma-separated holiday type IDs
+          example: "2,4,7"
+        indoors_set:
+          type: string
+          description: Comma-separated indoor feature IDs
+          example: "1,2,5,8"
+        indoor_description:
+          type: string
+          description: Free-text description of indoor features
+          example: Open-plan kitchen/living area with wood burner, Smart TV, and board games.
+        outdoors_set:
+          type: string
+          description: Comma-separated outdoor feature IDs
+          example: "1,3,6"
+        outdoor_description:
+          type: string
+          description: Free-text description of outdoor features
+          example: Enclosed garden with patio furniture and BBQ. Stunning views over the vale.
+        parking:
+          type: string
+          description: Parking arrangements
+          example: Private driveway with space for 2 cars.
+        max_vehicle_allowed:
+          type: integer
+          description: Maximum vehicles allowed on-site
+          example: 2
+        ev_charge_note:
+          type: string
+          description: EV charging details
+          example: Type 2 charger available in the driveway.
+        wifi_download_speed:
+          type: number
+          format: float
+          description: WiFi download speed in Mbps
+          example: 48.5
+        wifi_upload_speed:
+          type: number
+          format: float
+          description: WiFi upload speed in Mbps
+          example: 12.3
+        checkin:
+          type: string
+          description: Standard check-in time
+          example: "16:00"
+        checkout:
+          type: string
+          description: Standard check-out time
+          example: "10:00"
+        house_rules:
+          type: string
+          description: House rules that guests must follow
+          example: No smoking. Maximum 2 well-behaved dogs by arrangement.
+        suitable_type_set:
+          type: string
+          description: Comma-separated suitability type IDs
+          example: "1,2"
+        children_suitable:
+          type: string
+          description: Whether children are welcome
+          example: "yes"
+        pets_suitable:
+          type: string
+          description: Whether pets are suitable beyond the is_pets flag
+          example: "yes"
+        cat_note:
+          type: string
+          description: Detailed pet notes
+          example: Maximum 2 dogs. Please keep dogs off the furniture.
+        mobility_suitable:
+          type: string
+          description: Whether restricted mobility access is available
+          example: "no"
+        restricted_mobility_note:
+          type: string
+          description: Mobility access details
+          example: Steps to the front door. Ground-floor bedroom and wet room available.
+        property_place_id:
+          type: integer
+          description: Place / destination area ID
+          example: 14
+        property_place_slug:
+          type: string
+          description: Slug of the place this property belongs to
+          example: porlock
+        region:
+          type: string
+          description: Region name
+          example: Exmoor
+        area:
+          type: string
+          description: Area name
+          example: North Devon & Exmoor
+        airport_name:
+          type: string
+          description: Nearest airport name
+          example: Exeter Airport
+        airport_distance:
+          type: number
+          format: float
+          description: Distance to nearest airport in miles
+          example: 42.5
+        trainStation_name:
+          type: string
+          description: Nearest train station name
+          example: Taunton
+        trainStation_distance:
+          type: number
+          format: float
+          description: Distance to nearest train station in miles
+          example: 22.0
+        nearestbeach_name:
+          type: string
+          description: Nearest beach name
+          example: Porlock Weir
+        nearestbeach_distance:
+          type: number
+          format: float
+          description: Distance to nearest beach in miles
+          example: 2
+        nearestshop_distance:
+          type: number
+          format: float
+          description: Distance to nearest shop in miles
+          example: 1
+        tip_get_there:
+          type: string
+          description: How to get there / directions tip
+          example: A car is recommended for exploring the area.
+        youtube_url:
+          type: string
+          description: YouTube video tour URL
+          example: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+        virtualTour_url:
+          type: string
+          description: Virtual tour URL (Matterport or similar)
+          example: 'https://my.matterport.com/show/?m=abc123'
+        status:
+          type: string
+          description: Property listing status
+          enum:
+            - active
+            - inactive
+          example: active
+        live:
+          type: string
+          description: Whether the property is live and bookable
+          enum:
+            - "yes"
+            - "no"
+          example: "yes"
+        online:
+          type: string
+          description: Whether the property is published online
+          enum:
+            - "yes"
+            - "no"
+            - archive
+          example: "yes"
+        created:
+          type: string
+          format: date-time
+          description: When the property listing was created
+          example: "2022-03-10T14:00:00.000Z"
+        modified:
+          type: string
+          format: date-time
+          description: When the property listing was last modified
+          example: "2026-02-18T09:30:00.000Z"
+
+    PropertyDetailResponse:
+      type: object
+      description: Response wrapper for the property detail endpoint
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          description: Whether the request was successful
+          example: true
+        data:
+          $ref: "#/components/schemas/PropertyDetail"
+
+    # ────────────────────────────────────────────
+    # Images
+    # ────────────────────────────────────────────
+
+    LegacyImage:
+      type: object
+      description: Legacy property image stored on the original image server
+      required:
+        - id
+        - property_id
+        - name
+        - status
+        - reorder
+        - created
+        - modified
+      properties:
+        id:
+          type: integer
+          description: Unique image identifier
+          example: 4521
+        property_id:
+          type: integer
+          description: Property this image belongs to
+          example: 312
+        name:
+          type: string
+          description: Full-size image filename
+          example: meadow-cottage-living-room.jpg
+        thumb_name:
+          type: string
+          description: Thumbnail image filename
+          example: thumb_meadow-cottage-living-room.jpg
+        medium_name:
+          type: string
+          description: Medium-size image filename
+          example: medium_meadow-cottage-living-room.jpg
+        image_desc:
+          type: string
+          description: Alt-text / caption for the image
+          example: Spacious open-plan living room with wood burner
+        status:
+          type: string
+          description: Whether the image is currently visible
+          enum:
+            - active
+            - inactive
+          example: active
+        reorder:
+          type: integer
+          description: Display order (lower numbers appear first)
+          example: 1
+        created:
+          type: string
+          format: date-time
+          description: When the image was uploaded
+          example: "2024-06-15T10:30:00.000Z"
+        modified:
+          type: string
+          format: date-time
+          description: When the image record was last modified
+          example: "2025-01-20T14:12:00.000Z"
+
+    GcsImage:
+      type: object
+      description: GCS (Google Cloud Storage) property image — the newer upload format
+      required:
+        - id
+        - filename
+        - gcsPath
+        - url
+        - contentType
+        - size
+        - reorder
+        - created
+        - modified
+      properties:
+        id:
+          type: integer
+          description: Unique file upload identifier
+          example: 8910
+        filename:
+          type: string
+          description: Original filename
+          example: harbour-view-bedroom-1.jpg
+        gcsPath:
+          type: string
+          description: Path within the GCS bucket
+          example: properties/312/harbour-view-bedroom-1.jpg
+        url:
+          type: string
+          description: Publicly accessible URL for the image
+          example: 'https://storage.googleapis.com/bb-property-images/properties/312/harbour-view-bedroom-1.jpg'
+        contentType:
+          type: string
+          description: MIME content type
+          example: image/jpeg
+        size:
+          type: integer
+          description: File size in bytes
+          example: 245760
+        reorder:
+          type: integer
+          description: Display order (lower numbers appear first)
+          example: 2
+        imageDesc:
+          type: string
+          description: Alt-text / caption for the image
+          example: Master bedroom with harbour views
+        created:
+          type: string
+          format: date-time
+          description: When the image was uploaded
+          example: "2025-09-01T08:45:00.000Z"
+        modified:
+          type: string
+          format: date-time
+          description: When the image record was last modified
+          example: "2025-09-01T08:45:00.000Z"
+
+    PropertyImagesData:
+      type: object
+      description: Container for legacy and GCS image arrays
+      required:
+        - legacy
+        - gcs
+      properties:
+        legacy:
+          type: array
+          items:
+            $ref: "#/components/schemas/LegacyImage"
+          description: Images stored on the legacy image server
+        gcs:
+          type: array
+          items:
+            $ref: "#/components/schemas/GcsImage"
+          description: Images stored in Google Cloud Storage
+
+    PropertyImages:
+      type: object
+      description: Combined image response containing both legacy and GCS images for a property
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          description: Whether the request was successful
+          example: true
+        data:
+          $ref: "#/components/schemas/PropertyImagesData"
+
+    # ────────────────────────────────────────────
+    # Extras
+    # ────────────────────────────────────────────
+
+    Extra:
+      type: object
+      description: A bookable extra / add-on available for a property
+      required:
+        - id
+        - property_id
+        - extra_name_id
+        - price
+        - name
+        - max_num
+        - per_night
+        - unit
+      properties:
+        id:
+          type: integer
+          description: Unique extra record identifier
+          example: 87
+        property_id:
+          type: integer
+          description: Property this extra belongs to
+          example: 312
+        extra_name_id:
+          type: integer
+          description: Extra type identifier (references the extra_names lookup table)
+          example: 1
+        price:
+          type: number
+          format: float
+          description: Price for this extra in GBP
+          example: 25.00
+        name:
+          type: string
+          description: Human-readable name of the extra (e.g. Dog, Cot, High Chair, Log Basket)
+          example: Dog
+        max_num:
+          type: integer
+          description: Maximum quantity a guest can book (e.g. max 2 dogs)
+          example: 2
+        per_night:
+          type: boolean
+          description: Whether the price is charged per night (true) or per stay (false)
+          example: false
+        unit:
+          type: string
+          description: "Pricing unit: per_stay, per_night, or per_week"
+          example: per_stay
+
+    # ────────────────────────────────────────────
+    # Reviews
+    # ────────────────────────────────────────────
+
+    Review:
+      type: object
+      description: A published guest review for a property
+      required:
+        - id
+        - propertyId
+        - stars
+        - overallExperienceRating
+        - cleanlinessRating
+        - locationRating
+        - valueForMoneyRating
+        - dateLeft
+        - created
+      properties:
+        id:
+          type: integer
+          description: Unique review identifier
+          example: 1542
+        propertyId:
+          type: integer
+          description: Property this review is for
+          example: 312
+        stars:
+          type: number
+          format: float
+          description: Overall star rating out of 5
+          example: 4.5
+        overallExperienceRating:
+          type: number
+          format: float
+          description: Overall experience sub-rating out of 5
+          example: 5
+        cleanlinessRating:
+          type: number
+          format: float
+          description: Cleanliness sub-rating out of 5
+          example: 4.5
+        locationRating:
+          type: number
+          format: float
+          description: Location sub-rating out of 5
+          example: 5
+        valueForMoneyRating:
+          type: number
+          format: float
+          description: Value for money sub-rating out of 5
+          example: 4
+        tagLine:
+          type: string
+          description: Short summary headline written by the guest
+          example: Perfect family getaway
+        comment:
+          type: string
+          description: Full review text left by the guest
+          example: "We had a wonderful week at Meadow Cottage. The views across Porlock Vale were stunning and the cottage was spotlessly clean. The kids loved the garden."
+        customer:
+          type: string
+          description: Display name of the guest who left the review
+          example: Sarah T.
+        dateLeft:
+          type: string
+          format: date-time
+          description: Date the review was submitted
+          example: "2026-01-15T00:00:00.000Z"
+        reviewType:
+          type: string
+          description: Source of the review (bb = Booking Brain, airbnb, google, etc.)
+          example: bb
+        created:
+          type: string
+          format: date-time
+          description: When the review record was created
+          example: "2026-01-15T12:30:00.000Z"
+
+    # ────────────────────────────────────────────
+    # Pricing
+    # ────────────────────────────────────────────
+
+    PriceRequest:
+      type: object
+      description: Request body for calculating the price of a property stay
+      required:
+        - start_date
+        - num_nights
+      properties:
+        start_date:
+          type: string
+          format: date
+          description: Check-in date in YYYY-MM-DD format
+          example: "2026-07-04"
+        end_date:
+          type: string
+          format: date
+          description: Check-out date in YYYY-MM-DD format (alternative to num_nights)
+          example: "2026-07-11"
+        num_nights:
+          type: integer
+          minimum: 1
+          description: Number of nights for the stay
+          example: 7
+        num_guests:
+          type: integer
+          minimum: 1
+          description: Total number of guests (adults + children)
+          example: 4
+        skip_conflict_check:
+          type: boolean
+          description: Skip availability conflict check (useful for re-pricing existing bookings)
+          default: false
+          example: false
+
+    Price:
+      type: object
+      description: "Price calculation result. The response code indicates availability: 0 = available, 1 = booking conflict, 2 = dates unavailable, 3 = too many guests, 4 = date in past"
+      required:
+        - response
+      properties:
+        response:
+          type: integer
+          description: "Response code: 0 = available, 1 = booking conflict, 2 = dates unavailable, 3 = too many guests, 4 = date in past"
+          example: 0
+        price:
+          type: number
+          format: float
+          description: Accommodation charge in GBP (before cleaning fee and service fee)
+          example: 850.00
+        final_total_price:
+          type: number
+          format: float
+          description: Final total price in GBP including all fees and discounts
+          example: 925.00
+        normal_price:
+          type: number
+          format: float
+          description: Original price before any discounts were applied (only present when a discount exists)
+          example: 950.00
+        apply_price:
+          type: string
+          description: Pricing model used for this property
+          enum:
+            - nightly
+            - weekly
+            - monthly
+            - fixed
+          example: nightly
+        cleaning_fee:
+          type: number
+          format: float
+          description: Cleaning fee in GBP (if applicable)
+          example: 45.00
+        service_fee:
+          type: number
+          format: float
+          description: Service fee in GBP (if applicable)
+          example: 30.00
+        service_apply:
+          type: string
+          description: Whether a service fee is applied to this property
+          enum:
+            - "yes"
+            - "no"
+          example: "yes"
+        security_deposit:
+          type: number
+          format: float
+          description: Refundable security deposit in GBP
+          example: 150.00
+        is_special_price:
+          type: string
+          description: Whether a special / promotional price has been applied
+          enum:
+            - "yes"
+            - "no"
+          example: "no"
+        type:
+          type: string
+          description: Price type indicator (full or short_break)
+          example: full
+        discount:
+          type: object
+          description: Discount details when a SuperControl discount is applied
+          properties:
+            type:
+              type: string
+              description: 'Discount type ("no" if no discount)'
+              example: "no"
+            amount:
+              type: number
+              format: float
+              description: Discount amount in GBP
+            percentage:
+              type: number
+              format: float
+              description: Discount percentage
+        applicable_discount:
+          type: string
+          description: Name of the applicable discount (if any)
+          example: LateAvailabilityDiscount
+        error:
+          type: string
+          description: Error message when required parameters are missing
+          example: "start_date, property_id, and num_nights are required"
+
+    # ────────────────────────────────────────────
+    # Available Nights
+    # ────────────────────────────────────────────
+
+    AvailableNightsRequest:
+      type: object
+      description: Request body for retrieving available night durations from a check-in date
+      required:
+        - checkin_date
+      properties:
+        checkin_date:
+          type: string
+          format: date
+          description: Check-in date in YYYY-MM-DD format
+          example: "2026-07-04"
+
+    # ────────────────────────────────────────────
+    # Booking
+    # ────────────────────────────────────────────
+
+    BookingGuest:
+      type: object
+      description: Guest contact details nested within a booking request
+      required:
+        - first_name
+        - last_name
+        - email
+        - phone
+      properties:
+        first_name:
+          type: string
+          description: Guest first name
+          example: Sarah
+        last_name:
+          type: string
+          description: Guest last name
+          example: Thompson
+        email:
+          type: string
+          format: email
+          description: Guest email address
+          example: sarah.thompson@example.co.uk
+        phone:
+          type: string
+          description: Guest phone number (international format preferred)
+          example: "+44 7700 900123"
+        address:
+          type: string
+          description: Guest street address
+          example: 14 Harbour View
+        city:
+          type: string
+          description: Guest city
+          example: Bristol
+        country:
+          type: string
+          description: Guest country
+          example: United Kingdom
+
+    BookingRequest:
+      type: object
+      description: Request body for submitting a new booking
+      required:
+        - property_id
+        - checkin
+        - checkout
+        - nights
+        - guests
+        - property_charge
+        - User
+      properties:
+        property_id:
+          type: integer
+          description: Property ID to book
+          example: 42
+        checkin:
+          type: string
+          format: date
+          description: Check-in date in YYYY-MM-DD format
+          example: "2026-07-04"
+        checkout:
+          type: string
+          format: date
+          description: Check-out date in YYYY-MM-DD format
+          example: "2026-07-11"
+        nights:
+          type: integer
+          minimum: 1
+          description: Number of nights for the stay
+          example: 7
+        guests:
+          type: integer
+          minimum: 1
+          description: Total number of guests (adults + children)
+          example: 4
+        property_charge:
+          type: number
+          format: float
+          description: Total property charge in GBP (as calculated by the get-price endpoint)
+          example: 895.00
+        User:
+          $ref: "#/components/schemas/BookingGuest"
+
+    BookingResult:
+      type: object
+      description: Booking confirmation returned after submitting a booking
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Whether the booking was successfully created
+          example: true
+        booking_id:
+          type: integer
+          description: Unique booking identifier
+          example: 28456
+        status:
+          type: string
+          description: Booking status (confirmed, pending, cancelled, sandbox)
+          example: confirmed
+        property_id:
+          type: integer
+          description: Property ID that was booked
+          example: 42
+        checkin_date:
+          type: string
+          format: date
+          description: Check-in date (YYYY-MM-DD)
+          example: "2026-07-04"
+        checkout_date:
+          type: string
+          format: date
+          description: Check-out date (YYYY-MM-DD)
+          example: "2026-07-11"
+        num_nights:
+          type: integer
+          description: Number of nights booked
+          example: 7
+        num_guests:
+          type: integer
+          description: Number of guests
+          example: 4
+        guest_first_name:
+          type: string
+          description: Guest's first name
+          example: Sarah
+        guest_last_name:
+          type: string
+          description: Guest's last name
+          example: Thompson
+        guest_email:
+          type: string
+          format: email
+          description: Guest's email address
+          example: sarah.thompson@example.co.uk
+        total_amount:
+          type: number
+          format: float
+          description: Total booking amount in GBP
+          example: 925.00
+        currency:
+          type: string
+          description: Currency code (always GBP)
+          example: GBP
+        booked_site:
+          type: string
+          description: Attribution source for the booking
+          example: Booking Brain Developer API
+        message:
+          type: string
+          description: Error message if the booking failed, or sandbox mode notice
+          example: "Booking confirmed successfully"
+        sandbox:
+          type: boolean
+          description: Whether this was a sandbox (test) booking
+          example: false
+
+    # ────────────────────────────────────────────
+    # Voucher
+    # ────────────────────────────────────────────
+
+    VoucherRequest:
+      type: object
+      description: Request body for validating a discount voucher code
+      required:
+        - voucher_code
+        - property_id
+        - num_nights
+        - checkin_date
+        - total_price
+      properties:
+        voucher_code:
+          type: string
+          description: Voucher code to validate
+          example: SUMMER20
+        property_id:
+          type: integer
+          description: Property ID the voucher is being applied to
+          example: 42
+        num_nights:
+          type: integer
+          minimum: 1
+          description: Number of nights for the stay
+          example: 7
+        checkin_date:
+          type: string
+          format: date
+          description: Check-in date in YYYY-MM-DD format
+          example: "2026-07-04"
+        total_price:
+          type: number
+          format: float
+          minimum: 0
+          description: Total property price in GBP before discount
+          example: 895.00
+        guest_email:
+          type: string
+          format: email
+          description: Guest email address (some vouchers are restricted to specific guests)
+          example: sarah.thompson@example.co.uk
+
+    VoucherResult:
+      type: object
+      description: Voucher validation result with discount details
+      required:
+        - valid
+        - voucher_code
+      properties:
+        valid:
+          type: boolean
+          description: Whether the voucher code is valid and can be applied
+          example: true
+        voucher_code:
+          type: string
+          description: The voucher code that was validated
+          example: SUMMER20
+        discount_type:
+          type: string
+          description: "Type of discount: 'percentage' or 'fixed'"
+          enum:
+            - percentage
+            - fixed
+          example: percentage
+        discount_value:
+          type: number
+          format: float
+          description: Discount value (percentage amount or fixed GBP amount depending on discount_type)
+          example: 10
+        discounted_price:
+          type: number
+          format: float
+          description: New total price after the voucher discount has been applied, in GBP
+          example: 805.50
+        original_price:
+          type: number
+          format: float
+          description: Original total price before the voucher was applied, in GBP
+          example: 895.00
+        message:
+          type: string
+          description: Human-readable message explaining the result
+          example: "Voucher applied: 10% discount"
+        property_id:
+          type: integer
+          description: Property ID the voucher was validated against
+          example: 42
+
+    # ────────────────────────────────────────────
+    # Payment
+    # ────────────────────────────────────────────
+
+    PaymentRequest:
+      type: object
+      description: Request body for processing a card payment via SagePay
+      required:
+        - booking_id
+        - card_holder
+        - card_number
+        - expiry_date
+        - security_code
+        - amount
+        - payment_type
+      properties:
+        booking_id:
+          type: integer
+          description: Booking ID to process payment for
+          example: 28456
+        card_holder:
+          type: string
+          description: Full name of the card holder
+          example: Sarah Thompson
+        card_number:
+          type: string
+          description: Card number with no spaces or dashes (13-19 digits)
+          pattern: '^\d{13,19}$'
+          example: "4929000000006"
+        expiry_date:
+          type: string
+          description: Card expiry date in MMYY format
+          pattern: '^\d{4}$'
+          example: "1228"
+        security_code:
+          type: string
+          description: Card security code (CVV/CVC, 3 or 4 digits)
+          pattern: '^\d{3,4}$'
+          example: "123"
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          description: Payment amount in GBP
+          example: 895.00
+        payment_type:
+          type: string
+          description: 'Payment type — "full" for full balance or "deposit" for deposit only'
+          enum:
+            - full
+            - deposit
+          example: full
+
+    PaymentResult:
+      type: object
+      description: "Payment processing result. Two possible outcomes: (1) Paid — payment completed, status is 'paid'. (2) 3DS Required — additional authentication needed, acsUrl and related fields are populated."
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Whether the payment request was processed without error
+          example: true
+        status:
+          type: string
+          description: "Payment status: 'paid' if complete, '3ds_required' if SCA redirect is needed, 'failed' on error"
+          enum:
+            - paid
+            - 3ds_required
+            - failed
+          example: paid
+        transactionId:
+          type: string
+          description: SagePay / Opayo transaction identifier
+          example: VSP-TXN-ABC12345
+        booking_id:
+          type: integer
+          description: Associated booking ID
+          example: 28456
+        amount:
+          type: number
+          format: float
+          description: Amount charged in GBP
+          example: 895.00
+        currency:
+          type: string
+          description: Currency code
+          example: GBP
+        acsUrl:
+          type: string
+          description: URL to redirect the cardholder to for 3D Secure authentication
+          example: 'https://acs.bank.co.uk/3ds/authenticate?txn=abc123'
+        cReq:
+          type: string
+          description: Base64-encoded payload to POST to the ACS URL (CReq)
+          example: eJxVUd1ugyAU...
+        threeDSSessionData:
+          type: string
+          description: Transaction ID to include in the 3DS challenge flow
+          example: abc-123-def-456
+        message:
+          type: string
+          description: Error or decline reason when status is failed
+          example: "Card declined — insufficient funds"
+        errorCode:
+          type: string
+          description: Gateway-specific error code
+          example: "2032"
+        sandbox:
+          type: boolean
+          description: Whether this was a sandbox request (sandbox keys cannot process payments)
+          example: false
+
+    # ────────────────────────────────────────────
+    # Places
+    # ────────────────────────────────────────────
+
+    Place:
+      type: object
+      description: A place / location that groups properties by destination
+      required:
+        - id
+        - name
+        - slug
+        - placeCoverPhoto
+        - latitude
+        - longitude
+        - status
+        - created
+        - modified
+      properties:
+        id:
+          type: integer
+          description: Unique place identifier
+          example: 14
+        name:
+          type: string
+          description: Display name of the place
+          example: Porlock
+        slug:
+          type: string
+          description: URL-safe slug used in routes and links
+          example: porlock
+        placeCoverPhoto:
+          type: string
+          description: Cover photo filename for the place
+          example: porlock-harbour-cover.jpg
+        latitude:
+          type: number
+          format: double
+          description: Latitude of the place centre point
+          example: 51.2089
+        longitude:
+          type: number
+          format: double
+          description: Longitude of the place centre point
+          example: -3.5915
+        status:
+          type: string
+          description: Whether the place is currently published
+          enum:
+            - active
+            - inactive
+          example: active
+        pageDescription:
+          type: string
+          description: Editorial description of the place
+          example: Porlock and Porlock Weir sit at the foot of Exmoor, offering a stunning mix of coast and countryside.
+        created:
+          type: string
+          format: date-time
+          description: When the place was created
+          example: "2023-04-12T09:00:00.000Z"
+        modified:
+          type: string
+          format: date-time
+          description: When the place was last updated
+          example: "2025-11-05T16:30:00.000Z"
+
+    PlacesResponse:
+      type: object
+      description: Response wrapper for the GET /developer/places endpoint
+      required:
+        - success
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          description: Whether the request was successful
+          example: true
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Place"
+          description: Array of places / destinations
+        meta:
+          type: object
+          required:
+            - count
+          properties:
+            count:
+              type: integer
+              description: Total number of places returned
+              example: 18
+
+    # ────────────────────────────────────────────
+    # Special Offers
+    # ────────────────────────────────────────────
+
+    SpecialOffer:
+      type: object
+      description: A special offer / promotional price for a property
+      required:
+        - id
+        - propertyId
+        - price
+        - checkin
+        - checkout
+        - created
+        - modified
+      properties:
+        id:
+          type: integer
+          description: Unique special offer identifier
+          example: 1089
+        propertyId:
+          type: integer
+          description: Property this offer applies to
+          example: 312
+        price:
+          type: number
+          format: float
+          description: Special offer price in GBP for the specified date range
+          example: 695.00
+        checkin:
+          type: string
+          format: date
+          description: Check-in date for this special offer (YYYY-MM-DD)
+          example: "2026-06-14"
+        checkout:
+          type: string
+          format: date
+          description: Check-out date for this special offer (YYYY-MM-DD)
+          example: "2026-06-21"
+        description:
+          type: string
+          description: Promotional description of the offer
+          example: "Early summer special — save over 15% on a week in Porlock"
+        created:
+          type: string
+          format: date-time
+          description: When the special offer was created
+          example: "2026-01-10T00:00:00.000Z"
+        modified:
+          type: string
+          format: date-time
+          description: When the special offer was last modified
+          example: "2026-03-01T11:20:00.000Z"
+
+    # ────────────────────────────────────────────
+    # Owner Contact
+    # ────────────────────────────────────────────
+
+    OwnerContact:
+      type: object
+      description: Property owner contact information
+      required:
+        - id
+        - first_name
+        - last_name
+        - email
+      properties:
+        id:
+          type: integer
+          description: Unique owner / user identifier
+          example: 56
+        first_name:
+          type: string
+          description: Owner's first name
+          example: Margaret
+        last_name:
+          type: string
+          description: Owner's last name
+          example: Henderson
+        email:
+          type: string
+          format: email
+          description: Owner's email address
+          example: margaret.henderson@example.co.uk
+        phone:
+          type: string
+          description: Owner's phone number in international format
+          example: "+441643987210"
+
+    OwnerContactResponse:
+      type: object
+      description: Response wrapper for the owner-contact endpoint
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          description: Whether the request was successful
+          example: true
+        data:
+          type: object
+          nullable: true
+          description: Owner contact details, or null if no owner found
+          allOf:
+            - $ref: "#/components/schemas/OwnerContact"

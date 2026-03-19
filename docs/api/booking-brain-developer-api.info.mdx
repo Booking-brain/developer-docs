@@ -1,0 +1,153 @@
+---
+id: booking-brain-developer-api
+title: "Booking Brain Developer API"
+description: "# Booking Brain Developer API"
+sidebar_label: Introduction
+sidebar_position: 0
+hide_title: true
+custom_edit_url: null
+---
+
+import ApiLogo from "@theme/ApiLogo";
+import Heading from "@theme/Heading";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+import Export from "@theme/ApiExplorer/Export";
+
+<span
+  className={"theme-doc-version-badge badge badge--secondary"}
+  children={"Version: 1.0.0"}
+>
+</span>
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Booking Brain Developer API"}
+>
+</Heading>
+
+
+
+# Booking Brain Developer API
+
+The Booking Brain Developer API gives you full programmatic access to holiday rental
+property search, availability, pricing, booking, and payment — everything you need
+to build a custom booking experience on top of the Booking Brain platform.
+
+## Authentication
+
+Every request must include an `X-API-Key` header. Keys are issued per-client and
+scoped to specific IP addresses and origins.
+
+```
+X-API-Key: bb_sandbox_test_key_do_not_use_in_production
+```
+
+**Sandbox keys** are available for development and testing. They return real search
+and property data but will not create actual bookings or process payments.
+
+## Rate Limiting
+
+Each API key has a configurable rate limit. When you exceed it, the API returns
+`429 Too Many Requests` with a `Retry-After` header indicating how many seconds
+to wait before retrying.
+
+## Pagination
+
+List endpoints return paginated results. Use `page` (1-based) and `limit` query
+parameters to navigate. Response metadata includes `total`, `page`, `limit`, and
+`totalPages` (or equivalent fields).
+
+## Error Handling
+
+All errors follow a consistent shape:
+
+```json
+{
+  "statusCode": 403,
+  "message": "Forbidden",
+  "error": "Forbidden"
+}
+```
+
+Validation errors (422) return `message` as an array of human-readable strings.
+
+## Typical Booking Flow
+
+1. **Search** — `GET /developer/search` to find properties
+2. **Detail** — `GET /developer/properties/{id}` for full listing info
+3. **Availability** — `GET /developer/properties/{id}/unavailableDates` to populate a calendar
+4. **Pricing** — `POST /developer/properties/{id}/get-price` to calculate the total
+5. **Book** — `POST /developer/bookings/save` to create the reservation
+6. **Pay** — `POST /developer/bookings/processPayment` to charge the guest's card
+
+
+<div
+  style={{"marginBottom":"2rem"}}
+>
+  <Heading
+    id={"authentication"}
+    as={"h2"}
+    className={"openapi-tabs__heading"}
+    children={"Authentication"}
+  >
+  </Heading><SchemaTabs
+    className={"openapi-tabs__security-schemes"}
+  >
+    <TabItem
+      label={"API Key: ApiKeyAuth"}
+      value={"ApiKeyAuth"}
+    >
+      
+      
+      API key issued per client. Include in every request as the `X-API-Key` header. Sandbox keys (prefixed `bb_sandbox_`) return real data but cannot create bookings or process payments.
+      
+      
+      <div>
+        <table>
+          <tbody>
+            <tr>
+              <th>
+                Security Scheme Type:
+              </th><td>
+                apiKey
+              </td>
+            </tr><tr>
+              <th>
+                Header parameter name:
+              </th><td>
+                X-API-Key
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </TabItem>
+  </SchemaTabs>
+</div><div
+  style={{"display":"flex","flexDirection":"column","marginBottom":"var(--ifm-paragraph-margin-bottom)"}}
+>
+  <h3
+    style={{"marginBottom":"0.25rem"}}
+  >
+    Contact
+  </h3><span>
+    Booking Brain Support: [support@bookingbrain.co.uk](mailto:support@bookingbrain.co.uk)
+  </span><span>
+    URL: [https://docs.bookingbrain.com](https://docs.bookingbrain.com)
+  </span>
+</div><div
+  style={{"marginBottom":"var(--ifm-paragraph-margin-bottom)"}}
+>
+  <h3
+    style={{"marginBottom":"0.25rem"}}
+  >
+    License
+  </h3><a
+    href={"https://www.bookingbrain.com/terms"}
+  >
+    Proprietary
+  </a>
+</div>
+      

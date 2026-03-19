@@ -1,0 +1,1450 @@
+# Booking Brain Developer API — Full LLM Context
+
+> Complete API reference for holiday property search, availability, booking, and payment. Properties are primarily in Exmoor and South West England.
+
+## Base URL
+
+https://app.bookingbrain.com/api/v1/developer
+
+## Authentication
+
+Every request must include an `X-API-Key` header.
+
+```
+X-API-Key: bb_sandbox_test_key_do_not_use_in_production
+```
+
+Keys are issued per-client and scoped to specific IP addresses and origins. Sandbox keys (prefixed `bb_sandbox_`) return real search and property data but cannot create actual bookings or process payments.
+
+## Rate Limiting
+
+Each API key has a configurable rate limit. When exceeded, the API returns `429 Too Many Requests` with a `Retry-After` header (in seconds). The response body:
+
+```json
+{
+  "statusCode": 429,
+  "message": "Too Many Requests",
+  "retryAfter": 45
+}
+```
+
+## Pagination
+
+List endpoints accept `page` (1-based) and `limit` query parameters. Response metadata includes `total`, `page`, `limit`, and `totalPages`.
+
+```json
+{
+  "total": 74,
+  "page": 1,
+  "limit": 20,
+  "totalPages": 4
+}
+```
+
+## Error Handling
+
+All errors follow a consistent shape:
+
+```json
+{
+  "statusCode": 403,
+  "message": "Forbidden",
+  "error": "Forbidden"
+}
+```
+
+Validation errors (422) return `message` as an array of human-readable strings:
+
+```json
+{
+  "statusCode": 422,
+  "message": ["start_date is required", "num_nights must be at least 1"],
+  "error": "Unprocessable Entity"
+}
+```
+
+Common status codes:
+- `200` — Success
+- `400` — Bad request (malformed body)
+- `403` — Invalid API key, IP not whitelisted, or origin not allowed
+- `404` — Resource not found
+- `422` — Validation failed
+- `429` — Rate limit exceeded
+
+## Typical Booking Flow
+
+1. **Search** — `GET /developer/search` to find properties by location, dates, guests, amenities
+2. **Detail** — `GET /developer/properties/{id}` for full listing info (description, amenities, pricing, location)
+3. **Availability** — `GET /developer/properties/{id}/unavailableDates` to populate a calendar widget
+4. **Start Dates** — `GET /developer/properties/{id}/start-dates` to get selectable check-in dates
+5. **Available Nights** — `POST /developer/properties/{id}/available-nights` to populate a nights dropdown
+6. **Pricing** — `POST /developer/properties/{id}/get-price` to calculate the total with fees and discounts
+7. **Voucher** (optional) — `POST /developer/bookings/validate-voucher` to apply a promo code
+8. **Book** — `POST /developer/bookings/save` to create the reservation
+9. **Pay** — `POST /developer/bookings/processPayment` to charge the guest's card via SagePay
+
+---
+
+## Endpoints — Full Reference
+
+---
+
+### GET /developer/search
+
+**operationId:** `searchProperties`
+**Tags:** Property Search
+
+Search holiday rental properties by location, dates, guest count, and amenities. Returns paginated results with property summaries. This is the starting point for any property discovery flow.
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| place | string | No | — | Place slug or name (e.g., "exmoor", "north-devon") |
+| checkin | string (date) | No | — | Check-in date (YYYY-MM-DD) |
+| nights | integer | No | — | Number of nights (min: 1) |
+| guests | integer | No | — | Number of guests (min: 1) |
+| bedrooms | integer | No | — | Minimum number of bedrooms (min: 1) |
+| pets | string | No | — | "yes" to filter pet-friendly properties only |
+| page | integer | No | 1 | Page number (min: 1) |
+| limit | integer | No | 20 | Results per page (min: 1, max: 100) |
+| sort | string | No | — | Sort field: "price", "rating", or "title" |
+
+**Response (200):** `SearchResult` object
+
+```json
+{
+  "properties": [
+    {
+      "id": 312,
+      "title": "Meadow Cottage",
+      "slug": "meadow-cottage",
+      "property_place_slug": "porlock",
+      "bed_rooms": 3,
+      "total_guest": 6,
+      "bath_rooms": 2,
+      "is_pets": true,
+      "status": "active",
+      "min_price": 595.00,
+      "price_per_night": 85.00,
+      "price_per_week": 850.00,
+      "apply_price": "nightly",
+      "thumbnailUrl": "https://storage.googleapis.com/bb-property-images/properties/312/meadow-cottage-main.jpg",
+      "latitude": 51.2089,
+      "longitude": -3.5915,
+      "search_summary": "A charming thatched cottage with stunning views across Porlock Vale to the Bristol Channel.",
+      "rating": 4.7
+    }
+  ],
+  "total_property_on_search": 74,
+  "current_page": 1,
+  "num_pages": 4,
+  "perpage": 20,
+  "property_place_type": [],
+  "filter_array_values": {},
+  "search_query_string": "{\"checkin\":\"Fri 4 Jul 26\",\"booking_nights\":7,\"guests\":4,\"place\":\"exmoor\"}",
+  "property_checkin": "Fri 4 Jul 26",
+  "property_booking_nights": 7,
+  "property_guests": 4,
+  "propertyRating": {},
+  "marker_array": "[{\"id\":312,\"lat\":51.2089,\"lng\":-3.5915,\"title\":\"Meadow Cottage\"}]"
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&checkin=2026-07-01&nights=7&guests=4&page=1&limit=20" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+```python
+import requests
+
+response = requests.get(
+    "https://app.bookingbrain.com/api/v1/developer/search",
+    params={
+        "place": "exmoor",
+        "checkin": "2026-07-01",
+        "nights": 7,
+        "guests": 4,
+        "page": 1,
+        "limit": 20,
+    },
+    headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+)
+print(response.json())
+```
+
+---
+
+### GET /developer/properties/specialoffers
+
+**operationId:** `getAllSpecialOffers`
+**Tags:** Property Search
+
+Retrieve current special offers and promotional prices across all properties. Returns discounted stays with check-in/check-out dates and offer prices.
+
+**Response (200):** Array of `SpecialOffer` objects
+
+```json
+[
+  {
+    "id": 1089,
+    "propertyId": 312,
+    "price": 695.00,
+    "checkin": "2026-06-14",
+    "checkout": "2026-06-21",
+    "description": "Early summer special — save over 15% on a week in Porlock",
+    "created": "2026-01-10T00:00:00.000Z",
+    "modified": "2026-03-01T11:20:00.000Z"
+  }
+]
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/specialoffers" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}
+
+**operationId:** `getPropertyById`
+**Tags:** Property Details
+
+Get full details for a specific property including title, description, location, amenities, pricing, images, and more. Use this after finding a property via search.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Response (200):** `PropertyDetailResponse` object
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 312,
+    "title": "Meadow Cottage",
+    "slug": "meadow-cottage",
+    "address": "Porlock Hill, Porlock, Somerset TA24 8HD",
+    "city": "Porlock",
+    "state": "Somerset",
+    "country": "United Kingdom",
+    "zip_code": "TA24 8HD",
+    "latitude": 51.2089,
+    "longitude": -3.5915,
+    "description": "Meadow Cottage is a beautifully restored thatched cottage...",
+    "things_to_do": "Walk the South West Coast Path...",
+    "food_and_drinks": "The Whortleberry Tea Room...",
+    "walk_and_beaches": "Porlock Weir beach is a 10-minute drive...",
+    "search_summary": "A charming thatched cottage with stunning views...",
+    "bed_rooms": 3,
+    "total_guest": 6,
+    "additional_guest": 4,
+    "free_guest": 4,
+    "single_beds": 2,
+    "double_beds": 1,
+    "king_beds": 1,
+    "sofa_beds": 0,
+    "cots": 1,
+    "bath_rooms": 2,
+    "family_bathrooms": 1,
+    "en_suites": 1,
+    "shower_rooms": 0,
+    "price_per_night": 85.00,
+    "price_per_week": 850.00,
+    "min_price": 595.00,
+    "apply_price": "nightly",
+    "additional_guest_price": 15.00,
+    "security_deposit": 150.00,
+    "security_deposit_info": "Returned within 7 days of departure subject to inspection.",
+    "is_pets": true,
+    "amenities_set": "1,3,5,12,18",
+    "holiday_types_set": "2,4,7",
+    "indoors_set": "1,2,5,8",
+    "indoor_description": "Open-plan kitchen/living area with wood burner, Smart TV, and board games.",
+    "outdoors_set": "1,3,6",
+    "outdoor_description": "Enclosed garden with patio furniture and BBQ. Stunning views over the vale.",
+    "parking": "Private driveway with space for 2 cars.",
+    "max_vehicle_allowed": 2,
+    "ev_charge_note": "Type 2 charger available in the driveway.",
+    "wifi_download_speed": 48.5,
+    "wifi_upload_speed": 12.3,
+    "checkin": "16:00",
+    "checkout": "10:00",
+    "house_rules": "No smoking. Maximum 2 well-behaved dogs by arrangement.",
+    "children_suitable": "yes",
+    "pets_suitable": "yes",
+    "cat_note": "Maximum 2 dogs. Please keep dogs off the furniture.",
+    "mobility_suitable": "no",
+    "restricted_mobility_note": "Steps to the front door. Ground-floor bedroom and wet room available.",
+    "property_place_id": 14,
+    "property_place_slug": "porlock",
+    "region": "Exmoor",
+    "area": "North Devon & Exmoor",
+    "airport_name": "Exeter Airport",
+    "airport_distance": 42.5,
+    "trainStation_name": "Taunton",
+    "trainStation_distance": 22.0,
+    "nearestbeach_name": "Porlock Weir",
+    "nearestbeach_distance": 2,
+    "nearestshop_distance": 1,
+    "youtube_url": "https://www.youtube.com/watch?v=...",
+    "virtualTour_url": "https://my.matterport.com/show/?m=...",
+    "status": "active",
+    "live": "yes",
+    "online": "yes",
+    "created": "2022-03-10T14:00:00.000Z",
+    "modified": "2026-02-18T09:30:00.000Z"
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/{placeSlug}/{propertySlug}
+
+**operationId:** `getPropertyBySlug`
+**Tags:** Property Details
+
+Look up a property using its URL-friendly slugs. Returns the same full detail as `getPropertyById`. Use when you have a human-readable URL like "/porlock/meadow-cottage" rather than a numeric ID.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| placeSlug | string | Yes | Place slug (e.g., "porlock", "north-devon") |
+| propertySlug | string | Yes | Property slug (e.g., "meadow-cottage") |
+
+**Response (200):** Same `PropertyDetailResponse` as `getPropertyById`.
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/porlock/meadow-cottage" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/extras
+
+**operationId:** `getPropertyExtras`
+**Tags:** Property Details
+
+Retrieve bookable extras and add-ons for a property such as dogs, cots, high chairs, and log baskets. Returns a map keyed by extra type.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Response (200):** Object map keyed by `extra_name_id`
+
+```json
+{
+  "1": {
+    "id": 87,
+    "property_id": 42,
+    "extra_name_id": 1,
+    "price": 25.00,
+    "name": "Dog",
+    "max_num": 2,
+    "per_night": false,
+    "unit": "per_stay"
+  },
+  "3": {
+    "id": 89,
+    "property_id": 42,
+    "extra_name_id": 3,
+    "price": 10.00,
+    "name": "Cot",
+    "max_num": 1,
+    "per_night": false,
+    "unit": "per_stay"
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/extras" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/reviews
+
+**operationId:** `getPropertyReviews`
+**Tags:** Property Details
+
+Retrieve published guest reviews for a property, ordered by most recent first. Includes star ratings, sub-ratings, review text, and guest name.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| page | integer | No | 1 | Page number |
+| limit | integer | No | 10 | Reviews per page |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1542,
+      "propertyId": 312,
+      "stars": 4.5,
+      "overallExperienceRating": 5,
+      "cleanlinessRating": 4.5,
+      "locationRating": 5,
+      "valueForMoneyRating": 4,
+      "tagLine": "Perfect family getaway",
+      "comment": "We had a wonderful week at Meadow Cottage...",
+      "customer": "Sarah T.",
+      "dateLeft": "2026-01-15T00:00:00.000Z",
+      "reviewType": "bb",
+      "created": "2026-01-15T12:30:00.000Z"
+    }
+  ],
+  "meta": {
+    "total": 24,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 3
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/reviews?page=1&limit=10" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/images
+
+**operationId:** `getPropertyImages`
+**Tags:** Property Details
+
+Retrieve all images for a property, split into legacy (original server) and GCS (Google Cloud Storage) collections. Each image includes URLs, alt text, and display ordering.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "legacy": [
+      {
+        "id": 4521,
+        "property_id": 312,
+        "name": "meadow-cottage-living-room.jpg",
+        "thumb_name": "thumb_meadow-cottage-living-room.jpg",
+        "medium_name": "medium_meadow-cottage-living-room.jpg",
+        "image_desc": "Spacious open-plan living room with wood burner",
+        "status": "active",
+        "reorder": 1,
+        "created": "2024-06-15T10:30:00.000Z",
+        "modified": "2025-01-20T14:12:00.000Z"
+      }
+    ],
+    "gcs": [
+      {
+        "id": 8910,
+        "filename": "harbour-view-bedroom-1.jpg",
+        "gcsPath": "properties/312/harbour-view-bedroom-1.jpg",
+        "url": "https://storage.googleapis.com/bb-property-images/properties/312/harbour-view-bedroom-1.jpg",
+        "contentType": "image/jpeg",
+        "size": 245760,
+        "reorder": 2,
+        "imageDesc": "Master bedroom with harbour views",
+        "created": "2025-09-01T08:45:00.000Z",
+        "modified": "2025-09-01T08:45:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/images" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/bedrooms
+
+**operationId:** `getPropertyBedrooms`
+**Tags:** Property Details
+
+Retrieve detailed bedroom configuration for a property including bed types and sizes per room.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Response (200):**
+
+```json
+[
+  {
+    "bedroom_number": 1,
+    "bed_type": "King",
+    "bed_count": 1,
+    "en_suite": true
+  },
+  {
+    "bedroom_number": 2,
+    "bed_type": "Twin",
+    "bed_count": 2,
+    "en_suite": false
+  }
+]
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/bedrooms" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/owner-contact
+
+**operationId:** `getOwnerContact`
+**Tags:** Property Details
+
+Retrieve the property owner's contact details. Returns null data if no owner is associated.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 56,
+    "first_name": "Margaret",
+    "last_name": "Henderson",
+    "email": "margaret.henderson@example.co.uk",
+    "phone": "+441643987210"
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/owner-contact" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/specialoffers
+
+**operationId:** `getPropertySpecialOffers`
+**Tags:** Property Details
+
+Retrieve current special offers for a single property. Returns discounted date ranges with offer prices.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Response (200):** Array of `SpecialOffer` objects (same schema as `getAllSpecialOffers`).
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/specialoffers" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/unavailableDates
+
+**operationId:** `getUnavailableDates`
+**Tags:** Availability & Pricing
+
+Retrieve all dates that are unavailable (booked or blocked) for a property. Use this to grey out dates in a calendar widget.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| year | string | No | Filter by year (e.g., "2026") |
+| month | string | No | Filter by month 1-12 (e.g., "7") |
+
+**Response (200):**
+
+```json
+[
+  "2026-07-05",
+  "2026-07-06",
+  "2026-07-07",
+  "2026-07-08",
+  "2026-07-09",
+  "2026-07-10",
+  "2026-07-11"
+]
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/unavailableDates?year=2026&month=7" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/startDays
+
+**operationId:** `getStartDays`
+**Tags:** Availability & Pricing
+
+Retrieve the days of the week on which new bookings can start (e.g., Friday and Saturday only). Use this to disable non-start days in your datepicker.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Response (200):**
+
+```json
+{
+  "monday": false,
+  "tuesday": false,
+  "wednesday": false,
+  "thursday": false,
+  "friday": true,
+  "saturday": true,
+  "sunday": false
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/startDays" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/shortBreaks
+
+**operationId:** `getShortBreaks`
+**Tags:** Availability & Pricing
+
+Retrieve short break configuration including minimum night requirements, allowed start days, and seasonal rules.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Response (200):**
+
+```json
+{
+  "short_breaks_enabled": true,
+  "min_nights": 3,
+  "allowed_start_days": ["friday", "saturday"],
+  "seasonal_rules": [
+    { "season": "low", "min_nights": 2 },
+    { "season": "high", "min_nights": 7 }
+  ]
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/shortBreaks" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/properties/{id}/start-dates
+
+**operationId:** `getStartDates`
+**Tags:** Availability & Pricing
+
+Retrieve specific available check-in dates for a property over the next N months. Unlike `startDays` (day-of-week rules), this returns actual calendar dates open for bookings.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| months | integer | No | 3 | Number of months to look ahead |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": [
+    "2026-07-04",
+    "2026-07-11",
+    "2026-07-18",
+    "2026-07-25"
+  ]
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/start-dates?months=3" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### POST /developer/properties/{id}/get-price
+
+**operationId:** `calculatePrice`
+**Tags:** Availability & Pricing
+
+Calculate the total price for a property stay including applicable discounts, cleaning fees, and service fees. A response code of 0 means available; non-zero codes indicate conflicts or restrictions. Always call this before creating a booking.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Request Body (`PriceRequest`):**
+
+```json
+{
+  "start_date": "2026-07-04",
+  "num_nights": 7,
+  "num_guests": 4,
+  "end_date": "2026-07-11",
+  "skip_conflict_check": false
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| start_date | string (date) | Yes | Check-in date (YYYY-MM-DD) |
+| num_nights | integer | Yes | Number of nights (min: 1) |
+| num_guests | integer | No | Total guests (adults + children) |
+| end_date | string (date) | No | Alternative to num_nights |
+| skip_conflict_check | boolean | No | Skip availability check (default: false) |
+
+**Response (200) — `Price`:**
+
+Response codes: `0` = available, `1` = booking conflict, `2` = dates unavailable, `3` = too many guests, `4` = date in past.
+
+```json
+{
+  "response": 0,
+  "price": 850.00,
+  "final_total_price": 925.00,
+  "normal_price": 950.00,
+  "apply_price": "nightly",
+  "cleaning_fee": 45.00,
+  "service_fee": 30.00,
+  "service_apply": "yes",
+  "security_deposit": 150.00,
+  "is_special_price": "no",
+  "type": "full",
+  "discount": {
+    "type": "no",
+    "amount": null,
+    "percentage": null
+  },
+  "applicable_discount": "LateAvailabilityDiscount"
+}
+```
+
+**Example:**
+```bash
+curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/42/get-price" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+  -H "Content-Type: application/json" \
+  -d '{"start_date": "2026-07-04", "num_nights": 7, "num_guests": 4}'
+```
+
+```python
+import requests
+
+response = requests.post(
+    "https://app.bookingbrain.com/api/v1/developer/properties/42/get-price",
+    json={"start_date": "2026-07-04", "num_nights": 7, "num_guests": 4},
+    headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+)
+print(response.json())
+```
+
+---
+
+### POST /developer/properties/{id}/available-nights
+
+**operationId:** `getAvailableNights`
+**Tags:** Availability & Pricing
+
+Given a check-in date, returns the valid night durations available (e.g., 3, 4, 7, 14 nights). Takes into account subsequent bookings, minimum stay rules, and short break config. Use to populate a "number of nights" dropdown.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Property ID |
+
+**Request Body (`AvailableNightsRequest`):**
+
+```json
+{
+  "checkin_date": "2026-07-04"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| checkin_date | string (date) | Yes | Check-in date (YYYY-MM-DD) |
+
+**Response (200):**
+
+```json
+[3, 4, 7, 10, 14]
+```
+
+**Example:**
+```bash
+curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/42/available-nights" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+  -H "Content-Type: application/json" \
+  -d '{"checkin_date": "2026-07-04"}'
+```
+
+---
+
+### POST /developer/bookings/save
+
+**operationId:** `createBooking`
+**Tags:** Booking
+
+Submit a new booking with guest details, dates, and pricing. The booking is attributed to your API key's client name. In sandbox mode, returns a mock response without creating an actual booking. Always call `calculatePrice` first to get the correct `property_charge`.
+
+**Request Body (`BookingRequest`):**
+
+```json
+{
+  "property_id": 42,
+  "checkin": "2026-07-04",
+  "checkout": "2026-07-11",
+  "nights": 7,
+  "guests": 4,
+  "property_charge": 895.00,
+  "User": {
+    "first_name": "Sarah",
+    "last_name": "Thompson",
+    "email": "sarah.thompson@example.co.uk",
+    "phone": "+44 7700 900123",
+    "address": "14 Harbour View",
+    "city": "Bristol",
+    "country": "United Kingdom"
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| property_id | integer | Yes | Property ID to book |
+| checkin | string (date) | Yes | Check-in date (YYYY-MM-DD) |
+| checkout | string (date) | Yes | Check-out date (YYYY-MM-DD) |
+| nights | integer | Yes | Number of nights (min: 1) |
+| guests | integer | Yes | Total guests (min: 1) |
+| property_charge | float | Yes | Total charge from get-price |
+| User | object | Yes | Guest contact details (see below) |
+
+**User (BookingGuest) fields:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| first_name | string | Yes | Guest first name |
+| last_name | string | Yes | Guest last name |
+| email | string | Yes | Guest email |
+| phone | string | Yes | Guest phone (international format preferred) |
+| address | string | No | Street address |
+| city | string | No | City |
+| country | string | No | Country |
+
+**Response (200) — `BookingResult`:**
+
+```json
+{
+  "success": true,
+  "booking_id": 28456,
+  "status": "confirmed",
+  "property_id": 42,
+  "checkin_date": "2026-07-04",
+  "checkout_date": "2026-07-11",
+  "num_nights": 7,
+  "num_guests": 4,
+  "guest_first_name": "Sarah",
+  "guest_last_name": "Thompson",
+  "guest_email": "sarah.thompson@example.co.uk",
+  "total_amount": 925.00,
+  "currency": "GBP",
+  "booked_site": "Booking Brain Developer API",
+  "message": "Booking confirmed successfully",
+  "sandbox": false
+}
+```
+
+**Example:**
+```bash
+curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/save" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "property_id": 42,
+    "checkin": "2026-07-04",
+    "checkout": "2026-07-11",
+    "nights": 7,
+    "guests": 4,
+    "property_charge": 895.00,
+    "User": {
+      "first_name": "Sarah",
+      "last_name": "Thompson",
+      "email": "sarah.thompson@example.co.uk",
+      "phone": "+44 7700 900123",
+      "address": "14 Harbour View",
+      "city": "Bristol",
+      "country": "United Kingdom"
+    }
+  }'
+```
+
+```python
+import requests
+
+response = requests.post(
+    "https://app.bookingbrain.com/api/v1/developer/bookings/save",
+    json={
+        "property_id": 42,
+        "checkin": "2026-07-04",
+        "checkout": "2026-07-11",
+        "nights": 7,
+        "guests": 4,
+        "property_charge": 895.00,
+        "User": {
+            "first_name": "Sarah",
+            "last_name": "Thompson",
+            "email": "sarah.thompson@example.co.uk",
+            "phone": "+44 7700 900123",
+            "address": "14 Harbour View",
+            "city": "Bristol",
+            "country": "United Kingdom",
+        },
+    },
+    headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
+)
+print(response.json())
+```
+
+---
+
+### POST /developer/bookings/validate-voucher
+
+**operationId:** `validateVoucher`
+**Tags:** Booking
+
+Validate a voucher code against a specific property, stay dates, and total price. Returns whether the voucher is valid, the discount type and amount, and the updated total.
+
+**Request Body (`VoucherRequest`):**
+
+```json
+{
+  "voucher_code": "SUMMER20",
+  "property_id": 42,
+  "num_nights": 7,
+  "checkin_date": "2026-07-04",
+  "total_price": 895.00,
+  "guest_email": "sarah.thompson@example.co.uk"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| voucher_code | string | Yes | Voucher code to validate |
+| property_id | integer | Yes | Property ID |
+| num_nights | integer | Yes | Number of nights (min: 1) |
+| checkin_date | string (date) | Yes | Check-in date (YYYY-MM-DD) |
+| total_price | float | Yes | Total price before discount (min: 0) |
+| guest_email | string | No | Guest email (some vouchers are guest-restricted) |
+
+**Response (200) — `VoucherResult`:**
+
+```json
+{
+  "valid": true,
+  "voucher_code": "SUMMER20",
+  "discount_type": "percentage",
+  "discount_value": 10,
+  "discounted_price": 805.50,
+  "original_price": 895.00,
+  "message": "Voucher applied: 10% discount",
+  "property_id": 42
+}
+```
+
+**Example:**
+```bash
+curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/validate-voucher" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "voucher_code": "SUMMER20",
+    "property_id": 42,
+    "num_nights": 7,
+    "checkin_date": "2026-07-04",
+    "total_price": 895.00,
+    "guest_email": "sarah.thompson@example.co.uk"
+  }'
+```
+
+---
+
+### POST /developer/bookings/processPayment
+
+**operationId:** `processPayment`
+**Tags:** Payment
+
+Process a card payment for an existing booking via the SagePay/Opayo gateway. Returns either a success confirmation or a 3D Secure redirect URL for additional authentication. Sandbox API keys cannot process real payments.
+
+**Request Body (`PaymentRequest`):**
+
+```json
+{
+  "booking_id": 28456,
+  "card_holder": "Sarah Thompson",
+  "card_number": "4929000000006",
+  "expiry_date": "1228",
+  "security_code": "123",
+  "amount": 895.00,
+  "payment_type": "full"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| booking_id | integer | Yes | Booking ID to pay for |
+| card_holder | string | Yes | Full name on card |
+| card_number | string | Yes | Card number, 13-19 digits, no spaces |
+| expiry_date | string | Yes | Expiry in MMYY format (e.g., "1228") |
+| security_code | string | Yes | CVV/CVC, 3 or 4 digits |
+| amount | float | Yes | Payment amount in GBP (min: 0.01) |
+| payment_type | string | Yes | "full" for full balance or "deposit" for deposit only |
+
+**Response (200) — `PaymentResult`:**
+
+Successful payment:
+```json
+{
+  "success": true,
+  "status": "paid",
+  "transactionId": "VSP-TXN-ABC12345",
+  "booking_id": 28456,
+  "amount": 895.00,
+  "currency": "GBP",
+  "sandbox": false
+}
+```
+
+3D Secure required:
+```json
+{
+  "success": true,
+  "status": "3ds_required",
+  "booking_id": 28456,
+  "acsUrl": "https://acs.bank.co.uk/3ds/authenticate?txn=abc123",
+  "cReq": "eJxVUd1ugyAU...",
+  "threeDSSessionData": "abc-123-def-456"
+}
+```
+
+Payment failed:
+```json
+{
+  "success": false,
+  "status": "failed",
+  "booking_id": 28456,
+  "message": "Card declined — insufficient funds",
+  "errorCode": "2032"
+}
+```
+
+**Example:**
+```bash
+curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/processPayment" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "booking_id": 28456,
+    "card_holder": "Sarah Thompson",
+    "card_number": "4929000000006",
+    "expiry_date": "1228",
+    "security_code": "123",
+    "amount": 895.00,
+    "payment_type": "full"
+  }'
+```
+
+---
+
+### GET /developer/places
+
+**operationId:** `getAllPlaces`
+**Tags:** Places
+
+Retrieve all active destination areas where properties are listed. Returns place names, slugs, coordinates, cover photos, and descriptions. Use to build a location picker or homepage destination grid.
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 14,
+      "name": "Porlock",
+      "slug": "porlock",
+      "placeCoverPhoto": "porlock-harbour-cover.jpg",
+      "latitude": 51.2089,
+      "longitude": -3.5915,
+      "status": "active",
+      "pageDescription": "Porlock and Porlock Weir sit at the foot of Exmoor...",
+      "created": "2023-04-12T09:00:00.000Z",
+      "modified": "2025-11-05T16:30:00.000Z"
+    }
+  ],
+  "meta": {
+    "count": 18
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/places" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/places/{slug}
+
+**operationId:** `getPropertiesByPlace`
+**Tags:** Places
+
+Retrieve all properties within a specific place/destination area with optional filters. Use to build a destination landing page.
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| slug | string | Yes | Place slug (e.g., "porlock", "north-devon", "exmoor") |
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| guests | integer | No | — | Filter by number of guests |
+| checkin | string (date) | No | — | Check-in date (YYYY-MM-DD) |
+| nights | integer | No | — | Number of nights |
+| page | integer | No | 1 | Page number |
+| limit | integer | No | 20 | Results per page |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 312,
+      "title": "Meadow Cottage",
+      "slug": "meadow-cottage",
+      "property_place_slug": "porlock",
+      "bed_rooms": 3,
+      "total_guest": 6,
+      "bath_rooms": 2,
+      "is_pets": true,
+      "status": "active",
+      "min_price": 595.00,
+      "thumbnailUrl": "https://storage.googleapis.com/bb-property-images/...",
+      "latitude": 51.2089,
+      "longitude": -3.5915,
+      "search_summary": "A charming thatched cottage..."
+    }
+  ],
+  "meta": {
+    "total": 22,
+    "page": 1,
+    "limit": 20,
+    "totalPages": 2
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/places/porlock?guests=4&checkin=2026-07-01&nights=7" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/usage/stats
+
+**operationId:** `getUsageStats`
+**Tags:** Usage
+
+Retrieve aggregated API usage statistics for a specific client, optionally filtered by date range.
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| client_id | string | Yes | Client ID |
+| start_date | string (date) | No | Start date (YYYY-MM-DD) |
+| end_date | string (date) | No | End date (YYYY-MM-DD) |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "total_calls": 1247,
+    "period": {
+      "start_date": "2026-03-01",
+      "end_date": "2026-03-19"
+    },
+    "endpoints": {
+      "GET /developer/search": 456,
+      "GET /developer/properties/{id}": 312,
+      "POST /developer/properties/{id}/get-price": 189
+    },
+    "error_count": 23,
+    "error_rate": 1.84
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/usage/stats?client_id=1&start_date=2026-03-01&end_date=2026-03-19" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+### GET /developer/usage/logs
+
+**operationId:** `getUsageLogs`
+**Tags:** Usage
+
+Retrieve detailed, paginated API usage logs showing every request made by a client. Each entry includes the endpoint, status code, response time, and timestamp.
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| client_id | integer | No | — | Filter by client ID |
+| endpoint | string | No | — | Filter by endpoint path |
+| property_id | integer | No | — | Filter by property ID |
+| start_date | string (date) | No | — | Start date (ISO format) |
+| end_date | string (date) | No | — | End date (ISO format) |
+| page | integer | No | 1 | Page number |
+| limit | integer | No | 50 | Items per page |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 98765,
+      "client_id": 1,
+      "endpoint": "GET /developer/search",
+      "status_code": 200,
+      "response_time_ms": 142,
+      "property_id": 42,
+      "created_at": "2026-03-19T14:32:15.000Z"
+    }
+  ],
+  "meta": {
+    "total": 1247,
+    "page": 1,
+    "limit": 50,
+    "totalPages": 25
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET "https://app.bookingbrain.com/api/v1/developer/usage/logs?client_id=1&start_date=2026-03-01&page=1&limit=50" \
+  -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
+```
+
+---
+
+## Complete Booking Flow — Code Example
+
+Here is a complete end-to-end booking flow in Python:
+
+```python
+import requests
+
+BASE = "https://app.bookingbrain.com/api/v1/developer"
+HEADERS = {"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"}
+
+# 1. Search for properties in Porlock for 4 guests, 7 nights
+search = requests.get(
+    f"{BASE}/search",
+    params={"place": "porlock", "checkin": "2026-07-04", "nights": 7, "guests": 4},
+    headers=HEADERS,
+).json()
+print(f"Found {search['total_property_on_search']} properties")
+
+# 2. Pick the first property and get full details
+prop = search["properties"][0]
+property_id = prop["id"]
+details = requests.get(
+    f"{BASE}/properties/{property_id}",
+    headers=HEADERS,
+).json()
+print(f"Property: {details['data']['title']}")
+
+# 3. Check available start dates
+start_dates = requests.get(
+    f"{BASE}/properties/{property_id}/start-dates?months=3",
+    headers=HEADERS,
+).json()
+print(f"Available start dates: {start_dates['data'][:5]}")
+
+# 4. Get available nights from chosen check-in date
+nights = requests.post(
+    f"{BASE}/properties/{property_id}/available-nights",
+    json={"checkin_date": "2026-07-04"},
+    headers=HEADERS,
+).json()
+print(f"Available night options: {nights}")
+
+# 5. Calculate the price
+price = requests.post(
+    f"{BASE}/properties/{property_id}/get-price",
+    json={"start_date": "2026-07-04", "num_nights": 7, "num_guests": 4},
+    headers=HEADERS,
+).json()
+if price["response"] != 0:
+    print("Dates not available!")
+    exit()
+print(f"Total price: {price['final_total_price']} GBP")
+
+# 6. (Optional) Validate a voucher
+voucher = requests.post(
+    f"{BASE}/bookings/validate-voucher",
+    json={
+        "voucher_code": "SUMMER20",
+        "property_id": property_id,
+        "num_nights": 7,
+        "checkin_date": "2026-07-04",
+        "total_price": price["final_total_price"],
+        "guest_email": "sarah.thompson@example.co.uk",
+    },
+    headers=HEADERS,
+).json()
+if voucher["valid"]:
+    print(f"Voucher applied! New price: {voucher['discounted_price']} GBP")
+    charge = voucher["discounted_price"]
+else:
+    charge = price["final_total_price"]
+
+# 7. Create the booking
+booking = requests.post(
+    f"{BASE}/bookings/save",
+    json={
+        "property_id": property_id,
+        "checkin": "2026-07-04",
+        "checkout": "2026-07-11",
+        "nights": 7,
+        "guests": 4,
+        "property_charge": charge,
+        "User": {
+            "first_name": "Sarah",
+            "last_name": "Thompson",
+            "email": "sarah.thompson@example.co.uk",
+            "phone": "+44 7700 900123",
+            "address": "14 Harbour View",
+            "city": "Bristol",
+            "country": "United Kingdom",
+        },
+    },
+    headers=HEADERS,
+).json()
+print(f"Booking ID: {booking['booking_id']}, Status: {booking['status']}")
+
+# 8. Process payment (not available in sandbox mode)
+# payment = requests.post(
+#     f"{BASE}/bookings/processPayment",
+#     json={
+#         "booking_id": booking["booking_id"],
+#         "card_holder": "Sarah Thompson",
+#         "card_number": "4929000000006",
+#         "expiry_date": "1228",
+#         "security_code": "123",
+#         "amount": charge,
+#         "payment_type": "full",
+#     },
+#     headers=HEADERS,
+# ).json()
+```
+
+---
+
+## Documentation Links
+
+- Full interactive docs: https://docs.bookingbrain.com
+- OpenAPI spec (YAML): https://docs.bookingbrain.com/openapi.yaml
+- Concise LLM summary: https://docs.bookingbrain.com/llms.txt
+- AI plugin manifest: https://docs.bookingbrain.com/.well-known/ai-plugin.json

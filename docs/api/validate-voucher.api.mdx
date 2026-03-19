@@ -1,0 +1,70 @@
+---
+id: validate-voucher
+title: "Validate a discount voucher"
+description: "Validate a voucher code against a specific property, stay dates, and total price. Returns whether the voucher is valid, the discount type and amount, and the updated total price after discount. Use this in the booking flow to let guests apply promo codes before payment."
+sidebar_label: "Validate a discount voucher"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: docs/api/booking-brain-developer-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Validate a discount voucher"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/developer/bookings/validate-voucher"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Validate a voucher code against a specific property, stay dates, and total price. Returns whether the voucher is valid, the discount type and amount, and the updated total price after discount. Use this in the booking flow to let guests apply promo codes before payment.
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./validate-voucher.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./validate-voucher.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

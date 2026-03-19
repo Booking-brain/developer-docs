@@ -1,0 +1,70 @@
+---
+id: get-unavailable-dates
+title: "Get unavailable dates for a property"
+description: "Retrieve all dates that are unavailable (booked or blocked) for a property. Returns an array of date strings that cannot be selected as check-in or stay dates. Use this to grey out dates in a calendar/datepicker widget."
+sidebar_label: "Get unavailable dates for a property"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: docs/api/booking-brain-developer-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get unavailable dates for a property"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/developer/properties/{id}/unavailableDates"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retrieve all dates that are unavailable (booked or blocked) for a property. Returns an array of date strings that cannot be selected as check-in or stay dates. Use this to grey out dates in a calendar/datepicker widget.
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-unavailable-dates.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-unavailable-dates.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-unavailable-dates.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

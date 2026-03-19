@@ -1,0 +1,70 @@
+---
+id: calculate-price
+title: "Calculate price for a property stay"
+description: "Calculate the total price for a property stay including any applicable discounts, cleaning fees, and service fees. Returns the property charge, discount amount, final total in GBP, number of nights, and price per night. A response code of 0 means available; non-zero codes indicate conflicts or restrictions. Call this before creating a booking to show the guest accurate pricing."
+sidebar_label: "Calculate price for a property stay"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: docs/api/booking-brain-developer-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Calculate price for a property stay"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/developer/properties/{id}/get-price"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Calculate the total price for a property stay including any applicable discounts, cleaning fees, and service fees. Returns the property charge, discount amount, final total in GBP, number of nights, and price per night. A response code of 0 means available; non-zero codes indicate conflicts or restrictions. Call this before creating a booking to show the guest accurate pricing.
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./calculate-price.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./calculate-price.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./calculate-price.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

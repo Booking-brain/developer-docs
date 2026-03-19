@@ -1,0 +1,67 @@
+# Booking Brain Developer API
+
+> Holiday property search, availability, booking, and payment API for UK holiday rentals (primarily Exmoor and South West England).
+
+## Base URL
+
+https://app.bookingbrain.com/api/v1/developer
+
+## Authentication
+
+Pass your API key in the `X-API-Key` header with every request.
+
+Sandbox key for testing: `bb_sandbox_test_key_do_not_use_in_production`
+
+Sandbox keys return real search and property data but cannot create actual bookings or process payments.
+
+## Endpoints
+
+### Property Search
+
+- `GET /developer/search` — `searchProperties` — Search properties with filters (place, dates, guests, bedrooms, pets, sort)
+- `GET /developer/properties/specialoffers` — `getAllSpecialOffers` — Get special offers across all properties
+
+### Property Details
+
+- `GET /developer/properties/{id}` — `getPropertyById` — Get full property details by numeric ID
+- `GET /developer/{placeSlug}/{propertySlug}` — `getPropertyBySlug` — Get property by place and property slug (human-readable URL)
+- `GET /developer/properties/{id}/extras` — `getPropertyExtras` — Get bookable extras/add-ons (dogs, cots, high chairs, etc.)
+- `GET /developer/properties/{id}/reviews` — `getPropertyReviews` — Get paginated guest reviews with ratings
+- `GET /developer/properties/{id}/images` — `getPropertyImages` — Get property images (legacy + GCS)
+- `GET /developer/properties/{id}/bedrooms` — `getPropertyBedrooms` — Get bedroom configuration and bed types
+- `GET /developer/properties/{id}/owner-contact` — `getOwnerContact` — Get property owner contact info
+- `GET /developer/properties/{id}/specialoffers` — `getPropertySpecialOffers` — Get special offers for a specific property
+
+### Availability & Pricing
+
+- `GET /developer/properties/{id}/unavailableDates` — `getUnavailableDates` — Get unavailable dates for a property calendar
+- `GET /developer/properties/{id}/startDays` — `getStartDays` — Get allowed check-in days of week
+- `GET /developer/properties/{id}/shortBreaks` — `getShortBreaks` — Get short break rules (min nights, seasonal rules)
+- `GET /developer/properties/{id}/start-dates` — `getStartDates` — Get available start dates for next N months
+- `POST /developer/properties/{id}/get-price` — `calculatePrice` — Calculate total price for a stay
+- `POST /developer/properties/{id}/available-nights` — `getAvailableNights` — Get valid night durations from a check-in date
+
+### Booking
+
+- `POST /developer/bookings/save` — `createBooking` — Submit a booking with guest details and pricing
+- `POST /developer/bookings/validate-voucher` — `validateVoucher` — Validate a discount voucher code
+
+### Payment
+
+- `POST /developer/bookings/processPayment` — `processPayment` — Process a card payment via SagePay/Opayo gateway
+
+### Places
+
+- `GET /developer/places` — `getAllPlaces` — Get all destination areas/locations
+- `GET /developer/places/{slug}` — `getPropertiesByPlace` — Get properties by place slug with optional filters
+
+### Usage
+
+- `GET /developer/usage/stats` — `getUsageStats` — Get aggregated API usage statistics
+- `GET /developer/usage/logs` — `getUsageLogs` — Get paginated API request logs
+
+## Documentation
+
+- Full docs: https://docs.bookingbrain.com
+- OpenAPI spec: https://docs.bookingbrain.com/openapi.yaml
+- Full LLM context: https://docs.bookingbrain.com/llms-full.txt

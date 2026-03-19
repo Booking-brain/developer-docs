@@ -1,0 +1,70 @@
+---
+id: get-property-images
+title: "Get property images"
+description: "Retrieve all images for a property, split into legacy (original server) and GCS (Google Cloud Storage) collections. Each image includes URLs, alt text, and display ordering. Use this to build a photo gallery or carousel on the property page."
+sidebar_label: "Get property images"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWv9z27YV/1fesb2b7aNkWbG7Rrvs5tpO7DVpfLay9hb5LIh8IpGAAAuAsjWf7vZH7C/cX7I9AKQoy4nc1uv1bv0lsUjg4X35vK/EXaRK1MxyJc/SaBBlaM81PbLzs4JlaKI4StEkmpe0JhpEF2g1xxkCEwK4WwNTpYFBGTbGYErBLXBpFQjMWDKHLaV5xiUTYFDPUG8Dkym8OrqErVdKZQLhSKgqhUurNMtwGxIlBCZ0punCCUtyfxZwmYgqRQPvLl6bGJiwYPHWxo5eyk0p2ByUTlFzmXXhnUGwOTdgFUwqLlLiM1dWQcaEQE1rIWFaVQYFKAk2x0YQKFmG3ZGM4siyzESD91GtHDhGy7gw0VUclUyzAi1qWnEXSVZgNIh4GsURJ42VzOZRHGn8seIa02hgdYX31doQPjuO4sgkORYsGtxFdl46atJihjpaxBHesqIUGA32+4srImtKJQ0aWt3v9ei/VdKvvQlqhbds1hY29lrDFCbzRpGlMtxRiaNESYvSEnlWloInDjS7HwydcbfOsZp8wMSuwedIFRMuMQ3mrLkHIs+45DKDibJ5jZsHmF4CbUWp7yNTJQkah1hmmbOMX8i9cur3Sx4nSglkco3J73O0OXr90AloLNwwA4HCtBJRyw5kzkU49BHyOzlRO1kekhKY1mxu7gnnV0ZxlCVmXbTwdnm6o0EAtFiYzVwFiDTA94wYqwgPwSsaDw4vnR/f49KBvqZy7X45d4gjY5mtvFAOZ4QojcwirSlUyqcc03XBePqAE9zn/p3kP1ZYB4gUpSVqum2j/YP+3mKVtc10G590EcSTn6BQMqN40ib/bK+/CKIuyRpLMWiN6stKiI7h/6gZnnKBQUkNvahAlqqbTqKsZRl2BJ9xmXW0UkX3Q5lRGLB5VUyuH3fkkNZKxsXnjvQENx9cYMqr4pEnv3GLHyGuo7n5cEfjms7YfPahsB3KDbALCXMPm6DnyKxwcFmyhKvKgCpRdkrBJPjjgY6HG25zuFEqhUmlpQ/EAdIb+WhHk4BRA0mlNUor5jDjhk+E40ZWBXkRSyyfoUsf4c+rNqvh2WLpS5uhfNzOjLAl1A1qkFUxQW2AlSUyDVOujd1ua4VcpvbSB8ScKl0wGw0o9GHHcmfUNdllS3AKolUpFEud3y9l6vf6+53eV529g+Feb/CsN+j1ur1e7+8OcHV0eBIWNCZKp44TwYyFhvo9dg46vb1Ovzfc2x/s9ZfskOdx6xb5oOnKJGJz9VRfPd0LoSHcrwTQhQ/pPzt0f6aGuhfO//3PfzkuJJLxvRkgKPCBMN5y1Cwx576IqbRY1gJDYiyOyLn/p4GdOKn5fTi8f/18r7dosbzRJ9/WyezBcJQzPVGV7sw43nQmmFII6OzVMajWxsZDaJWLHNybn0w1qZKPaFdOWypm99lef/fzh5MBNh9cTQRPxByYq1covFC9/Jnwl1tbmsHurvHY6WYOUKzkppuoYncy6dRg6vhSbPcncd0GzOaccfbmBMIOsB5jS07d8bsfSnSEHfY2A+klIcgnIQmTuXV9TUOzv3/wx696v0I87dcZ7PjpE9gbZixqCKr3CSsYBcgoJvo1g/lBp/e809sb9r4e7B/8JoL5Q+y0gvmrxDwqknMJDwXbFVqrHfQx9QWffh0tFvRyv/dsvXM7kzMmeAqH52fwEecxnJ2DVBZucm5RcGMxpbYtlObuFROExfTpGrZLy2TKdAqotdLLhk2jpUrItYs0CkCZlopLa+CGbMSaxmlKfTJs7d/e7h7c3m7fb9pcEXWkUrJ1gcaQMtdbt+Wqzb55Ohyeg98BiUrJ51MnvcwcdGg7qKkXaKVJ6D1bLJlYs8ZpVTDZ0chSRgHV6yOsdmZg0vduRNwZzmk8LPQo9y3sfr8Py749jpTEt1M3PFh1iUW8sSqoVy5WSsSXSk94mqJ0AwMn58Zoc5krbQOzgk1QQMFsktdaa2uVglL0ifNaQD9xB9f43l/XaNNgEXKnqpK/4/Z33P7GcNt/vq7RC2YRBC+4BbxNENP/womq6yTH5CPQhHTeOZxSOs6RhZr4aVB98gkwB+wmglPR5JkyJD/XVEpNeVZR9tIN44+BMy2xeu4keQps7/eft/G9AuH+81UIf97mDxlgyfXSvkOl4A2Tc7jwTm1819wItZnx71xNR55hMFHSK7XWs8lVJaj84BYmOFXaWUTPPcut4VMbXcT7a2J9CbNFHN12SCWXboefIwsms2gQJe8uXkdx5JC9/GlUpROillRaQOcHeHUyhFFTxrOy7E6U+shlNtGMS1fEs5LvzvZ2U5yhIEO2S/j9/q6v60cRjEYjCdA5hVH0Q+fw/KzzLc4HMJlcGybTibq9tmjs9UecX6fqWip7XRm85vK61Cqt3Mh+FI2kCwJBhr+yGbt0Sm1JsvJwKY+Sxi4B/gKY0+4UbZJvEV9PI2RMpO7oHwg+agb1b2gLPooGMIp+mvCxp7Nw/y9GcvtPI+nlohlxI1MtZJeCwFa9SAnsCpVt0VJ61tbj+dzmbhhf67B50OiPFyWFw5DEzEiOZEuZ9eNuhnbLc/mE+mxU+eLuF2qQVLc9kqXm0m7d09P2qk6Ovmjpw/1odFEZSgIzpmt/fUGzDzi1tjxyD7zS3Z/dY5yyStgQKE69IN3DNN1akSX+ybLQGSNJXKyhOhz9Cu2hmcvkSS3iYUfHktrWQXfkE1L3All6aC5dnPVc0L6jgMTvNadoJXGLqKzh8fS8DUb3q9H+l0kOL2jOKa655EHX9MugVaW9dpXB1pdJHsN7L/jRu4vXb8+H1zSqePHnp0VmTfviZPju4rvhxeF3ly9PLugY9zVudRFlq9OTw2O/4H0dFuCXRMRwxFU8klekii9baHBqwVtMSB2NnhKhDNZPMMkVNHucHa4oYdpche+29OXFjaWih3Vyx9NF0AqZyU0ffaZxM6XHKPuhLyRBQMeOwaTS3M4d1cOSf4vzw4pYen/Vfn1JxY4vItqLljWje1h/Pm1KqPBhtbHA+rzEt8nAjakwhRJrx+/Cmf9sTO07zuizb13lM5/Qxw3VcQhiXbj0xiWSBrZKjVN+iymMW3Yfb4cSDDQy4cP7pLKQMEktjR+3QNCmoVq71IpGclCyeYHSGvq8TPmfy6lyKghVwjd+D3xDJoDj2qA0CojiiEznZd7r9ro9ckKeoDSudAp6ouZKc7RMz8Pgdmnjm5ubdRtb1IVZn398AZ/hhULbMMfPLYGMz9DAXFUwrYQgDWSaFQWzPAkDSvo6nytqPMgw0jJBsT/0hgaZpiDBZowLNuGC08fqUvOEyyyulesvAAStumLc2dm6PoDOlojpSLauASSVsaqo9wPelqg5ygTdtF6VVPPZNdFKwSzNqbok+RdfAEGXJtK+nqeHJyv4Kipj60sL1Gg9BLRvCWBMYwu4nZCxmExH0iSqxJSUZEpM+JQnNAhiaarRGDROcj8CMo6t8Xg8kj83UPndI7mz08b/zo5jMNhAoGsHQ5gpAqNAxN2ti2GO8xXH8DYcSWej2rCNt9xwIaDlLyyxFROb3Map3zUCrprmMnPap6sidSDImSFDh/7H8b3sgLrghomEDd9DALexszht99ybkRxT17LWR4z9gJXBuNXt1RZtN+65uoGCdob2wUHwoYahluic0YeJGkyvubGtEUXQaenXUEOHphLW+IsuY7qvMoatvc6EGUz9HZuxE3YMP1ao5yO5vKxCeJJsxjNmsQsXdTYq0DJnmeamzdgqy8Q4DvTjmmTs0elfn1NeGdM9H6C2csYEoWLKUaRmu5bNd6+nTKYimOuQJjD0lAYMNLr09jI023QNFitxEDBNFchI3vkmYNl9Un2533sW++ehC/RFZ9Peh/Q78jOFtZcjuWhw/7d7AxAaAfX7TZwfhwPGlDnag5N8dcoSxia15MN5yRMmmmDyUqgberXXhZ2dS+cdOzsubI2pk2tlcO86Y7LWlC/dh6MZyT7t9jeRPrH7Xv4fO791YZjGx8QJJZ6RfEaUDlsR9nH0divZhIRjZgkBVkGpyko4R4aEcJAyPZL7dMK5j9o18fO3l5+lnqHtUKBHRzZhIvF03TRMuTRxQGRJq5+iWUeRXcNmgY6PMv5yD9VBwdu+chyy+UZKIRid+1jkaeZMZ55mRgHiD4ZulaWj+uYUS2wrNa+mlMuqpJ6NJgYF45SmjX/yl3spult9XMvkqUrMWip3FUWpjC2YbB37Cu29b8Jr1/vuloOq/9ebfr4GpaN2S8G4bH119fX1+6jBRLQyFIujgb/151V7FUe5MpY23N1RRH6nxWJBj10spqo4jmZMc/IeVzKn3NDfaTSYMmHu3xFs22brIgzvtmH15uCD7Nd1taRKcMZERb+iOPqIc39TcXG1iOtCmxjxLw6TBN10pt6yNrlc6UFenQyjxeI/ghDLQg==
+sidebar_class_name: "get api-method"
+info_path: docs/api/booking-brain-developer-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get property images"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/developer/properties/{id}/images"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retrieve all images for a property, split into legacy (original server) and GCS (Google Cloud Storage) collections. Each image includes URLs, alt text, and display ordering. Use this to build a photo gallery or carousel on the property page.
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-property-images.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-property-images.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-property-images.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

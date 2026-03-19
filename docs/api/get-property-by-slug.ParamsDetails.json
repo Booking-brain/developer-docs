@@ -1,0 +1,1 @@
+{"parameters":[{"name":"placeSlug","in":"path","required":true,"description":"Place slug (e.g., \"porlock\", \"north-devon\")","schema":{"type":"string"},"example":"porlock"},{"name":"propertySlug","in":"path","required":true,"description":"Property slug (e.g., \"meadow-cottage\")","schema":{"type":"string"},"example":"meadow-cottage"}]}

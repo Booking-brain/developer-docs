@@ -1,0 +1,1 @@
+{"parameters":[{"name":"id","in":"path","required":true,"description":"Property ID","schema":{"type":"integer"},"example":42},{"name":"months","in":"query","required":false,"description":"Number of months to look ahead (default: 3)","schema":{"type":"integer","default":3},"example":3}]}

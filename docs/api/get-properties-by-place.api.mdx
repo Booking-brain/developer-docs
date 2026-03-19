@@ -1,0 +1,70 @@
+---
+id: get-properties-by-place
+title: "Get properties by place slug"
+description: "Retrieve all properties within a specific place/destination area, with optional filters for guests, check-in date, and number of nights. Returns paginated property summaries. Use this to build a destination landing page showing all available properties in an area."
+sidebar_label: "Get properties by place slug"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: docs/api/booking-brain-developer-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get properties by place slug"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/developer/places/{slug}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retrieve all properties within a specific place/destination area, with optional filters for guests, check-in date, and number of nights. Returns paginated property summaries. Use this to build a destination landing page showing all available properties in an area.
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-properties-by-place.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-properties-by-place.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-properties-by-place.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

@@ -1,0 +1,185 @@
+import {themes as prismThemes} from 'prism-react-renderer';
+import type {Config} from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
+import type * as OpenApiPlugin from 'docusaurus-plugin-openapi-docs';
+
+const config: Config = {
+  title: 'Booking Brain Developer API',
+  tagline: 'Integrate property search, booking, and payment into your website',
+  favicon: 'img/favicon.ico',
+
+  future: {
+    v4: true,
+  },
+
+  url: 'https://docs.bookingbrain.com',
+  baseUrl: '/',
+
+  organizationName: 'Booking-brain',
+  projectName: 'developer-docs',
+
+  onBrokenLinks: 'throw',
+
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
+
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          sidebarPath: './sidebars.ts',
+          docItemComponent: '@theme/ApiItem',
+        },
+        blog: false,
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  plugins: [
+    function polyfillPlugin() {
+      return {
+        name: 'polyfill-node-modules',
+        configureWebpack() {
+          return {
+            resolve: {
+              fallback: {
+                path: require.resolve('path-browserify'),
+              },
+            },
+          };
+        },
+      };
+    },
+    [
+      'docusaurus-plugin-openapi-docs',
+      {
+        id: 'api',
+        docsPluginId: 'default',
+        config: {
+          bookingbrain: {
+            specPath: '../openapi.yaml',
+            outputDir: 'docs/api',
+            sidebarOptions: {
+              groupPathsBy: 'tag',
+              categoryLinkSource: 'tag',
+            },
+          } satisfies OpenApiPlugin.Options,
+        },
+      },
+    ],
+  ],
+
+  themes: [
+    'docusaurus-theme-openapi-docs',
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        language: ['en'],
+        indexBlog: false,
+        docsRouteBasePath: '/docs',
+      },
+    ],
+  ],
+
+  themeConfig: {
+    image: 'img/bookingbrain-social-card.jpg',
+    colorMode: {
+      defaultMode: 'light',
+      respectPrefersColorScheme: true,
+    },
+    navbar: {
+      title: 'Booking Brain',
+      logo: {
+        alt: 'Booking Brain Logo',
+        src: 'img/logo.svg',
+      },
+      items: [
+        {
+          type: 'docSidebar',
+          sidebarId: 'docsSidebar',
+          position: 'left',
+          label: 'Docs',
+        },
+        {
+          to: '/docs/api/booking-brain-developer-api',
+          label: 'API Reference',
+          position: 'left',
+        },
+        {
+          href: 'https://github.com/Booking-brain',
+          label: 'GitHub',
+          position: 'right',
+        },
+      ],
+    },
+    footer: {
+      style: 'dark',
+      links: [
+        {
+          title: 'Documentation',
+          items: [
+            {
+              label: 'Getting Started',
+              to: '/docs/intro',
+            },
+            {
+              label: 'Authentication',
+              to: '/docs/authentication',
+            },
+            {
+              label: 'Quick Start',
+              to: '/docs/quick-start',
+            },
+          ],
+        },
+        {
+          title: 'API',
+          items: [
+            {
+              label: 'API Reference',
+              to: '/docs/api/booking-brain-developer-api',
+            },
+          ],
+        },
+        {
+          title: 'Booking Brain',
+          items: [
+            {
+              label: 'Website',
+              href: 'https://www.bookingbrain.com',
+            },
+            {
+              label: 'Support',
+              href: 'mailto:support@bookingbrain.com',
+            },
+            {
+              label: 'GitHub',
+              href: 'https://github.com/Booking-brain',
+            },
+          ],
+        },
+      ],
+      copyright: `Copyright © ${new Date().getFullYear()} Booking Brain Ltd. All rights reserved.`,
+    },
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+      additionalLanguages: ['bash', 'json', 'php', 'python', 'ruby', 'csharp'],
+    },
+  } satisfies Preset.ThemeConfig,
+};
+
+export default config;

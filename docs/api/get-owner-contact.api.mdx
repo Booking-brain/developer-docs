@@ -1,0 +1,70 @@
+---
+id: get-owner-contact
+title: "Get property owner contact info"
+description: "Retrieve the property owner's contact details including name, email, and phone number. Use this to enable direct owner communication features or display owner information on the listing. Returns null data if no owner is associated with the property."
+sidebar_label: "Get property owner contact info"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "get api-method"
+info_path: docs/api/booking-brain-developer-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get property owner contact info"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/developer/properties/{id}/owner-contact"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retrieve the property owner's contact details including name, email, and phone number. Use this to enable direct owner communication features or display owner information on the listing. Returns null data if no owner is associated with the property.
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-owner-contact.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-owner-contact.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-owner-contact.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

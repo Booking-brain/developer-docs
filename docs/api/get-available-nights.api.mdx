@@ -1,0 +1,70 @@
+---
+id: get-available-nights
+title: "Get available nights from a check-in date"
+description: "Given a check-in date, returns the valid night durations available for a property (e.g., 3, 4, 7, 14 nights). Takes into account subsequent bookings, minimum stay rules, and short break configuration. Use this to populate a 'number of nights' dropdown after the guest selects a check-in date."
+sidebar_label: "Get available nights from a check-in date"
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: "post api-method"
+info_path: docs/api/booking-brain-developer-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+import Translate from "@docusaurus/Translate";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get available nights from a check-in date"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/developer/properties/{id}/available-nights"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Given a check-in date, returns the valid night durations available for a property (e.g., 3, 4, 7, 14 nights). Takes into account subsequent bookings, minimum stay rules, and short break configuration. Use this to populate a "number of nights" dropdown after the guest selects a check-in date.
+
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+>
+  <Translate id="theme.openapi.request.title">Request</Translate>
+</Heading>
+
+<ParamsDetails
+  {...require("./get-available-nights.ParamsDetails.json")}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  {...require("./get-available-nights.RequestSchema.json")}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  {...require("./get-available-nights.StatusCodes.json")}
+>
+  
+</StatusCodes>
+
+
+      

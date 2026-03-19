@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Booking Brain",
+  "name_for_model": "bookingbrain",
+  "description_for_human": "Search and book holiday properties across the UK",
+  "description_for_model": "API for searching holiday rental properties, checking availability, calculating prices, making bookings, and processing payments. Properties are primarily in Exmoor and South West England.",
+  "auth": {
+    "type": "service_http",
+    "authorization_type": "custom_header",
+    "custom_auth_header": "X-API-Key"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://docs.bookingbrain.com/openapi.yaml"
+  },
+  "logo_url": "https://docs.bookingbrain.com/img/logo.svg",
+  "contact_email": "support@bookingbrain.com",
+  "legal_info_url": "https://www.bookingbrain.com/terms"
+}
