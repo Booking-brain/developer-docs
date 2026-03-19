@@ -1223,17 +1223,18 @@ span[class*="openapi-schema__type"] {
   }
 }
 
+/* Remove Infima .container max-width cap inside doc pages —
+   this is the main cause of dead space on the right */
+[class*="docMainContainer"] > .container {
+  max-width: 100% !important;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
 /* Prevent flex children from blowing out of row */
 .openapi-left-panel__container,
 .openapi-right-panel__container {
   min-width: 0;
-}
-
-/* Left panel: remove right border on narrow viewports */
-@media (max-width: 1300px) {
-  .openapi-left-panel__container {
-    border-right: none;
-  }
 }
 
 /* URL bar — wrap the full path instead of truncating */
@@ -1248,15 +1249,23 @@ span[class*="openapi-schema__type"] {
   font-size: 0.85rem;
 }
 
-/* Code samples — enable horizontal scrolling on the code element */
+/* Code samples — enable horizontal scrolling on every code container */
 .openapi-explorer__code-block code {
   overflow-x: auto !important;
   display: block;
 }
 
 .openapi-right-panel__container pre,
-.openapi-tabs__code-container pre {
+.openapi-tabs__code-container pre,
+.openapi-tabs__code-container code {
   overflow-x: auto !important;
+}
+
+/* Left panel: remove right border when panels stack */
+@media (max-width: 1300px) {
+  .openapi-left-panel__container {
+    border-right: none;
+  }
 }
 
 /* Stack panels vertically below 1300px — side-by-side only on wide screens */
