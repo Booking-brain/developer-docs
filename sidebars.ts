@@ -16,6 +16,8 @@ const sidebars: SidebarsConfig = {
         'guides/ai-integration',
       ],
     },
+    'versioning',
+    'changelog',
   ],
   apiSidebar: apiSidebar,
 };

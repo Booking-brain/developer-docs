@@ -13,6 +13,14 @@ import TabItem from '@theme/TabItem';
 
 Go from zero to your first API response in under a minute. No sign-up, no account creation -- just a cURL command and the public sandbox key.
 
+:::info What you'll learn
+By the end of this guide you will be able to:
+- Search for holiday properties by location and guest count
+- Retrieve full property details including images and amenities
+- Check date availability for a property calendar
+- Calculate the total price for a stay including fees
+:::
+
 ## Prerequisites
 
 All you need is an HTTP client. The examples below use cURL, JavaScript (`fetch`), and Python (`requests`), but any language or tool works.

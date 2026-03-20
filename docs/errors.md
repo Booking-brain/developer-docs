@@ -71,7 +71,15 @@ Always check whether `message` is a string or an array when parsing errors.
 
 ## Rate limiting
 
-Each API key has a configurable per-minute rate limit. When you exceed it, the API returns `429 Too Many Requests`.
+Each API key has a per-minute rate limit. When you exceed it, the API returns `429 Too Many Requests`.
+
+| Key type | Rate limit |
+|---|---|
+| Sandbox | 60 requests per minute |
+| Production (default) | 500 requests per minute |
+| Production (custom) | Up to 2,000 requests per minute on request |
+
+To request a higher rate limit, contact [support@bookingbrain.co.uk](mailto:support@bookingbrain.co.uk).
 
 ### Rate limit headers
 

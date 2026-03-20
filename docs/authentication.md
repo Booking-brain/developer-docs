@@ -92,6 +92,10 @@ To request a production key, contact [support@bookingbrain.co.uk](mailto:support
 3. The IP addresses that will make API calls
 4. The origin domains for browser-based requests (if applicable)
 
+## HTTPS required
+
+All API requests must be made over HTTPS. Requests made over plain HTTP will be rejected. This ensures your API key and all request/response data are encrypted in transit.
+
 ## Base URL
 
 All API requests use a single base URL. There is no separate sandbox server -- the sandbox key and production key hit the same endpoint:

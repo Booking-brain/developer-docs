@@ -100,6 +100,18 @@ const config: Config = {
 
   headTags: [
     {
+      tagName: 'link',
+      attributes: {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+    },
+    {
+      tagName: 'link',
+      attributes: {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous'},
+    },
+    {
+      tagName: 'meta',
+      attributes: {name: 'theme-color', content: '#80a675'},
+    },
+    {
       tagName: 'script',
       attributes: {type: 'application/ld+json'},
       innerHTML: JSON.stringify({
@@ -180,6 +192,14 @@ const config: Config = {
             {
               label: 'API Reference',
               to: '/docs/api/booking-brain-developer-api',
+            },
+            {
+              label: 'Changelog',
+              to: '/docs/changelog',
+            },
+            {
+              label: 'Versioning',
+              to: '/docs/versioning',
             },
           ],
         },
