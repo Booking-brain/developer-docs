@@ -1162,19 +1162,20 @@ span[class*="openapi-schema__type"] {
    ============================================================ */
 
 /* Hide the default 📄️ emoji on API doc cards.
-   We use text-indent to push the emoji off-screen and ::after to render
-   the clean title. This avoids the font-size:0 approach which caused
-   truncation and doubled text in accessibility tree. */
+   Docusaurus adds text--truncate (white-space:nowrap; overflow:hidden;
+   text-overflow:ellipsis) to card titles AND descriptions. We must
+   override those to allow wrapping, and use font-size:0 on the h2 to
+   hide the emoji while ::after renders the clean title from attr(title). */
 .api-method [class*="cardTitle"] {
-  text-indent: -9999px;
-  overflow: hidden;
-  position: relative;
-  display: block;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
 }
 
 .api-method [class*="cardTitle"]::after {
   content: attr(title);
-  text-indent: 0;
   display: block;
   font-size: 1.1rem;
   font-weight: 700;
@@ -1216,11 +1217,14 @@ span[class*="openapi-schema__type"] {
   border-left-color: var(--bb-method-patch);
 }
 
-/* Card description styling */
+/* Card description styling — override text--truncate to show full text */
 .api-method [class*="cardDescription"] {
   color: var(--bb-gray-500);
   font-size: 0.85rem;
   line-height: 1.5;
+  white-space: normal !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
 }
 
 /* ============================================================
