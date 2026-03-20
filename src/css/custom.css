@@ -1330,6 +1330,50 @@ span[class*="openapi-schema__type"] {
 }
 
 /* ============================================================
+   LANGUAGE TAB ICONS (OpenAPI code samples)
+   Self-hosted SVGs — no external CDN dependency
+   ============================================================ */
+.openapi-tabs__code-item--python::after,
+.openapi-tabs__code-item--nodejs::after,
+.openapi-tabs__code-item--curl::after,
+.openapi-tabs__code-item--php::after,
+.openapi-tabs__code-item--ruby::after,
+.openapi-tabs__code-item--go::after {
+  content: "";
+  width: 24px;
+  height: 24px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-block: auto;
+  flex-shrink: 0;
+}
+
+.openapi-tabs__code-item--python::after {
+  background-image: url("/img/lang/python.svg") !important;
+}
+
+.openapi-tabs__code-item--nodejs::after {
+  background-image: url("/img/lang/nodejs.svg") !important;
+}
+
+.openapi-tabs__code-item--curl::after {
+  background-image: url("/img/lang/curl.svg") !important;
+}
+
+.openapi-tabs__code-item--php::after {
+  background-image: url("/img/lang/php.svg") !important;
+}
+
+.openapi-tabs__code-item--ruby::after {
+  background-image: url("/img/lang/ruby.svg") !important;
+}
+
+.openapi-tabs__code-item--go::after {
+  background-image: url("/img/lang/go.svg") !important;
+}
+
+/* ============================================================
    PRINT STYLES
    ============================================================ */
 @media print {
