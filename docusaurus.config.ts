@@ -31,6 +31,10 @@ const config: Config = {
     locales: ['en'],
   },
 
+  clientModules: [
+    './src/clientModules/langUrlSync.js',
+  ],
+
   presets: [
     [
       'classic',
