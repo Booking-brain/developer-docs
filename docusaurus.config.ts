@@ -33,6 +33,7 @@ const config: Config = {
 
   clientModules: [
     './src/clientModules/langUrlSync.js',
+    './src/clientModules/bugReportWidget.js',
   ],
 
   presets: [
