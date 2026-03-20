@@ -43,8 +43,18 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           docItemComponent: '@theme/ApiItem',
+          lastVersion: 'current',
+          versions: {
+            current: {label: 'v1'},
+          },
         },
         blog: false,
+        sitemap: {
+          lastmod: 'date',
+          changefreq: null,
+          priority: null,
+          ignorePatterns: ['/search', '/search/**'],
+        },
         theme: {
           customCss: './src/css/custom.css',
         },
