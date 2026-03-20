@@ -1,41 +1,116 @@
-# Website
+# Booking Brain Developer API Documentation
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+The official API documentation site for Booking Brain, live at **[docs.bookingbrain.com](https://docs.bookingbrain.com)**.
 
-## Installation
+Built with [Docusaurus](https://docusaurus.io/) and hosted on Firebase Hosting.
+
+## What's in the box
+
+- **Guides** — Quick start, authentication, booking flow walkthrough, error handling, AI integration
+- **API Reference** — Auto-generated from [OpenAPI spec](../openapi.yaml) with interactive "Try It" explorer
+- **SDK & MCP** — Node.js SDK (`@bookingbrain/sdk`) and MCP server (`@bookingbrain/mcp-server`) for AI agents
+- **Search** — Full-text local search across all docs
+- **Copy for LLM** — One-click button to copy any page as clean Markdown for AI assistants
+- **Bug Report Widget** — Slide-out panel that uses AI to analyse reports and create GitHub issues automatically
+
+## Quick start
 
 ```bash
-yarn
+npm install
+npm start
 ```
 
-## Local Development
-
-```bash
-yarn start
-```
-
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+Opens at [localhost:3000](http://localhost:3000). Hot-reloads on save.
 
 ## Build
 
 ```bash
-yarn build
+npm run build
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
-
-## Deployment
-
-Using SSH:
+Generates static output in `build/`. To preview locally:
 
 ```bash
-USE_SSH=true yarn deploy
+npm run serve
 ```
 
-Not using SSH:
+## Regenerate API docs
+
+When the OpenAPI spec changes:
 
 ```bash
-GIT_USER=<Your GitHub username> yarn deploy
+npx docusaurus gen-api-docs bookingbrain
 ```
 
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+To clean and regenerate:
+
+```bash
+npx docusaurus clean-api-docs bookingbrain
+npx docusaurus gen-api-docs bookingbrain
+```
+
+## Deploy
+
+Deployed to Firebase Hosting (project `bookingbrain-docs-43d7f`):
+
+```bash
+FIREBASE_TOKEN=$(grep FIREBASE_TOKEN .env | cut -d= -f2) npx firebase deploy --only hosting
+```
+
+Custom domain: `docs.bookingbrain.com` (CNAME via DynaDot).
+
+## Project structure
+
+```
+developer-docs/
+├── docs/                    # Markdown content (guides, changelog, versioning)
+│   ├── api/                 # Auto-generated from OpenAPI spec
+│   └── guides/              # Integration guides (SDK, AI, test data)
+├── src/
+│   ├── clientModules/       # Client-side JS (bug widget, LLM copy, lang sync)
+│   ├── components/          # React components (BookingFlowDiagram)
+│   ├── css/                 # Custom styles
+│   └── pages/               # Standalone pages (homepage)
+├── static/                  # Static assets (images, favicons, llms.txt)
+├── docusaurus.config.ts     # Site configuration
+├── firebase.json            # Hosting config, redirects, security headers, CSP
+├── sidebars.ts              # Sidebar navigation
+└── openapi.yaml             # → ../openapi.yaml (API spec, shared with SDK/MCP)
+```
+
+## Key features
+
+| Feature | Implementation |
+|---|---|
+| OpenAPI explorer | `docusaurus-plugin-openapi-docs` + `docusaurus-theme-openapi-docs` |
+| Local search | `@easyops-cn/docusaurus-search-local` |
+| Self-hosted fonts | `@fontsource/inter` (no Google Fonts dependency) |
+| Security headers | CSP, HSTS (2yr + preload), X-Frame-Options, nosniff, Referrer-Policy |
+| SEO | JSON-LD, OG tags, canonical URLs, sitemap with lastmod, robots.txt |
+| AI-ready | `/llms.txt`, `/llms-full.txt`, Copy for LLM button, operationIds on all endpoints |
+| Bug reports | AI-powered: user describes issue → Anthropic analyses → GitHub issue created |
+| Dark mode | System preference detection + manual toggle |
+| URL redirects | 301s from old `/docs/` prefix (Docusaurus plugin + Firebase server-side) |
+
+## Related repositories
+
+| Repo | Description |
+|---|---|
+| [`bb-sdk`](https://github.com/Booking-brain/bb-sdk) | Node.js SDK (`@bookingbrain/sdk`) |
+| [`bb-mcp-server`](https://github.com/Booking-brain/bb-mcp-server) | MCP server for AI agents |
+| [`bb_app_api`](https://github.com/Booking-brain/bb_app_api) | Backend API (NestJS) |
+| [`openapi.yaml`](../openapi.yaml) | OpenAPI 3.0 specification |
+
+## Sandbox API key
+
+Start making API calls immediately — no sign-up required:
+
+```
+bb_sandbox_test_key_do_not_use_in_production
+```
+
+Add as `X-API-Key` header. Returns real property data; won't create bookings or process payments.
+
+## License
+
+Copyright Booking Brain Ltd. All rights reserved.

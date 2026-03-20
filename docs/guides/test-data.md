@@ -119,6 +119,6 @@ curl "https://app.bookingbrain.com/api/v1/developer/usage/stats" \
 
 ## Next steps
 
-- [Quick Start](/docs/quick-start) -- Make your first API call
-- [Booking Flow](/docs/booking-flow) -- End-to-end integration guide
-- [Error Handling](/docs/errors) -- Handle errors and rate limits
+- [Quick Start](/quick-start) -- Make your first API call
+- [Booking Flow](/booking-flow) -- End-to-end integration guide
+- [Error Handling](/errors) -- Handle errors and rate limits

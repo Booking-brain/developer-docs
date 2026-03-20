@@ -98,7 +98,7 @@ Search --> Select property --> Check availability --> Calculate price --> Book -
 5. **Book** -- `POST /developer/bookings/save` to create the reservation
 6. **Pay** -- `POST /developer/bookings/processPayment` to charge the guest's card
 
-See the [Booking Flow Guide](/docs/booking-flow) for a complete walkthrough with code examples.
+See the [Booking Flow Guide](/booking-flow) for a complete walkthrough with code examples.
 
 ## Who is this for?
 
@@ -121,9 +121,9 @@ No sign-up required. Just add the `X-API-Key` header to your requests and go.
 
 ## Next steps
 
-- [Quick Start](/docs/quick-start) -- Make your first API call in under a minute
-- [Authentication](/docs/authentication) -- Understand API keys, sandbox vs production, and security
-- [Error Handling](/docs/errors) -- Learn the error format and how to handle rate limits
-- [Booking Flow](/docs/booking-flow) -- End-to-end integration guide with full code examples
-- [AI Integration](/docs/guides/ai-integration) -- Build AI agents that can search and book properties
-- [API Reference](/docs/api/booking-brain-developer-api) -- Complete endpoint documentation
+- [Quick Start](/quick-start) -- Make your first API call in under a minute
+- [Authentication](/authentication) -- Understand API keys, sandbox vs production, and security
+- [Error Handling](/errors) -- Learn the error format and how to handle rate limits
+- [Booking Flow](/booking-flow) -- End-to-end integration guide with full code examples
+- [AI Integration](/guides/ai-integration) -- Build AI agents that can search and book properties
+- [API Reference](/api/booking-brain-developer-api) -- Complete endpoint documentation

@@ -244,6 +244,6 @@ Use separate keys for development, staging, and production. This makes it easy t
 
 ## Next steps
 
-- [Error Handling](/docs/errors) -- Understand error responses and rate limits
-- [Quick Start](/docs/quick-start) -- Make your first API call
-- [API Reference](/docs/api/booking-brain-developer-api) -- Full endpoint documentation
+- [Error Handling](/errors) -- Understand error responses and rate limits
+- [Quick Start](/quick-start) -- Make your first API call
+- [API Reference](/api/booking-brain-developer-api) -- Full endpoint documentation

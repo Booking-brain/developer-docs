@@ -153,7 +153,7 @@ import type {
 
 ## Next steps
 
-- [Quick Start](/docs/quick-start) -- Make your first API call
-- [Booking Flow](/docs/booking-flow) -- Understand the booking sequence
-- [AI Integration](/docs/guides/ai-integration) -- Connect with AI agents via MCP
-- [API Reference](/docs/api/booking-brain-developer-api) -- Full endpoint docs
+- [Quick Start](/quick-start) -- Make your first API call
+- [Booking Flow](/booking-flow) -- Understand the booking sequence
+- [AI Integration](/guides/ai-integration) -- Connect with AI agents via MCP
+- [API Reference](/api/booking-brain-developer-api) -- Full endpoint docs

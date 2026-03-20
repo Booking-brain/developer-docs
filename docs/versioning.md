@@ -50,10 +50,10 @@ When a new API version is released:
 
 1. The previous version will continue to work for **at least 12 months** after the new version is available
 2. Deprecated endpoints will return a `Sunset` header indicating when they will be removed
-3. We will announce deprecations via email to all registered API key holders and in the [Changelog](/docs/changelog)
+3. We will announce deprecations via email to all registered API key holders and in the [Changelog](/changelog)
 
 ## Staying informed
 
-- **[Changelog](/docs/changelog)** — All API changes are documented with dates
+- **[Changelog](/changelog)** — All API changes are documented with dates
 - **Email notifications** — Production API key holders receive advance notice of breaking changes
 - **`Sunset` header** — Deprecated endpoints include this header in responses

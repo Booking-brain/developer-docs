@@ -23,12 +23,9 @@ This guide walks through the entire booking journey from property search to paym
 
 The Booking Brain booking flow follows six steps:
 
-```
-1. Search  -->  2. Property Detail  -->  3. Check Availability
-     |                                          |
-     v                                          v
-6. Pay  <--  5. Create Booking  <--  4. Calculate Price
-```
+import BookingFlowDiagram from '@site/src/components/BookingFlowDiagram';
+
+<BookingFlowDiagram />
 
 Each step builds on the previous one. Let's walk through them.
 
@@ -525,6 +522,6 @@ for (const offer of propertyOffers) {
 
 ## Next steps
 
-- [Error Handling](/docs/errors) -- Handle errors and rate limits gracefully
-- [AI Integration](/docs/guides/ai-integration) -- Build AI agents that book properties
-- [API Reference](/docs/api/booking-brain-developer-api) -- Full endpoint documentation
+- [Error Handling](/errors) -- Handle errors and rate limits gracefully
+- [AI Integration](/guides/ai-integration) -- Build AI agents that book properties
+- [API Reference](/api/booking-brain-developer-api) -- Full endpoint documentation

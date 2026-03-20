@@ -37,10 +37,10 @@ function HomepageHeader() {
           into your website with a clean, well-documented REST API.
         </p>
         <div className={styles.heroButtons}>
-          <Link className={clsx('button button--lg', styles.heroPrimary)} to="/docs/quick-start">
+          <Link className={clsx('button button--lg', styles.heroPrimary)} to="/quick-start">
             Get Started
           </Link>
-          <Link className={clsx('button button--lg', styles.heroSecondary)} to="/docs/api/booking-brain-developer-api">
+          <Link className={clsx('button button--lg', styles.heroSecondary)} to="/api/booking-brain-developer-api">
             API Reference <ArrowRight size={16} strokeWidth={2} />
           </Link>
         </div>
@@ -173,7 +173,7 @@ function CodePreviewSection() {
             </ul>
             <Link
               className={clsx('button button--lg', styles.ctaPrimary)}
-              to="/docs/quick-start">
+              to="/quick-start">
               Read the Quick Start Guide
             </Link>
           </div>
@@ -263,12 +263,12 @@ function CtaSection() {
         <div className={styles.ctaButtons}>
           <Link
             className={clsx('button button--lg', styles.ctaPrimary)}
-            to="/docs/quick-start">
+            to="/quick-start">
             Quick Start Guide
           </Link>
           <Link
             className={clsx('button button--lg', styles.ctaSecondary)}
-            to="/docs/authentication">
+            to="/authentication">
             Authentication Docs
           </Link>
         </div>

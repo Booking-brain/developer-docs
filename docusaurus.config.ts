@@ -34,6 +34,7 @@ const config: Config = {
   clientModules: [
     './src/clientModules/langUrlSync.js',
     './src/clientModules/bugReportWidget.js',
+    './src/clientModules/copyForLlm.js',
   ],
 
   presets: [
@@ -41,6 +42,7 @@ const config: Config = {
       'classic',
       {
         docs: {
+          routeBasePath: '/',
           sidebarPath: './sidebars.ts',
           docItemComponent: '@theme/ApiItem',
           lastVersion: 'current',
@@ -78,6 +80,29 @@ const config: Config = {
       };
     },
     [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {from: '/docs/intro', to: '/intro'},
+          {from: '/docs/quick-start', to: '/quick-start'},
+          {from: '/docs/authentication', to: '/authentication'},
+          {from: '/docs/errors', to: '/errors'},
+          {from: '/docs/booking-flow', to: '/booking-flow'},
+          {from: '/docs/changelog', to: '/changelog'},
+          {from: '/docs/versioning', to: '/versioning'},
+          {from: '/docs/guides/node-sdk', to: '/guides/node-sdk'},
+          {from: '/docs/guides/ai-integration', to: '/guides/ai-integration'},
+          {from: '/docs/guides/test-data', to: '/guides/test-data'},
+        ],
+        createRedirects(existingPath) {
+          if (existingPath.startsWith('/api/')) {
+            return [`/docs${existingPath}`];
+          }
+          return undefined;
+        },
+      },
+    ],
+    [
       'docusaurus-plugin-openapi-docs',
       {
         id: 'api',
@@ -104,20 +129,12 @@ const config: Config = {
         hashed: true,
         language: ['en'],
         indexBlog: false,
-        docsRouteBasePath: '/docs',
+        docsRouteBasePath: '/',
       },
     ],
   ],
 
   headTags: [
-    {
-      tagName: 'link',
-      attributes: {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
-    },
-    {
-      tagName: 'link',
-      attributes: {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous'},
-    },
     {
       tagName: 'meta',
       attributes: {name: 'theme-color', content: '#80a675'},
@@ -166,12 +183,12 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          to: '/docs/api/booking-brain-developer-api',
+          to: '/api/booking-brain-developer-api',
           label: 'API Reference',
           position: 'left',
         },
         {
-          to: '/docs/changelog',
+          to: '/changelog',
           label: 'Changelog',
           position: 'left',
         },
@@ -195,15 +212,15 @@ const config: Config = {
           items: [
             {
               label: 'Getting Started',
-              to: '/docs/intro',
+              to: '/intro',
             },
             {
               label: 'Authentication',
-              to: '/docs/authentication',
+              to: '/authentication',
             },
             {
               label: 'Quick Start',
-              to: '/docs/quick-start',
+              to: '/quick-start',
             },
           ],
         },
@@ -212,15 +229,15 @@ const config: Config = {
           items: [
             {
               label: 'API Reference',
-              to: '/docs/api/booking-brain-developer-api',
+              to: '/api/booking-brain-developer-api',
             },
             {
               label: 'Changelog',
-              to: '/docs/changelog',
+              to: '/changelog',
             },
             {
               label: 'Versioning',
-              to: '/docs/versioning',
+              to: '/versioning',
             },
           ],
         },

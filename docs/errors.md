@@ -275,6 +275,6 @@ The booking and payment endpoints do not have built-in idempotency keys. To avoi
 
 ## Next steps
 
-- [Authentication](/docs/authentication) -- Understand API keys and security
-- [Booking Flow](/docs/booking-flow) -- End-to-end integration guide
-- [API Reference](/docs/api/booking-brain-developer-api) -- Full endpoint documentation
+- [Authentication](/authentication) -- Understand API keys and security
+- [Booking Flow](/booking-flow) -- End-to-end integration guide
+- [API Reference](/api/booking-brain-developer-api) -- Full endpoint documentation

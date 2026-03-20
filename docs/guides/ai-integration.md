@@ -461,10 +461,10 @@ When defining tools for your LLM, include rich descriptions that help the model 
 
 ### Rate limits in agent loops
 
-AI agents can make many API calls in rapid succession. Implement rate limit handling with exponential backoff (see [Error Handling](/docs/errors)) and consider adding a delay between consecutive calls in agent loops.
+AI agents can make many API calls in rapid succession. Implement rate limit handling with exponential backoff (see [Error Handling](/errors)) and consider adding a delay between consecutive calls in agent loops.
 
 ## Next steps
 
-- [Booking Flow](/docs/booking-flow) -- Understand the complete booking sequence
-- [Error Handling](/docs/errors) -- Build resilient API calls with retry logic
-- [API Reference](/docs/api/booking-brain-developer-api) -- Full endpoint documentation
+- [Booking Flow](/booking-flow) -- Understand the complete booking sequence
+- [Error Handling](/errors) -- Build resilient API calls with retry logic
+- [API Reference](/api/booking-brain-developer-api) -- Full endpoint documentation

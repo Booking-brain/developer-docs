@@ -289,7 +289,7 @@ The price response tells you:
 
 | Field | Description |
 |---|---|
-| `response` | `0` = available. Non-zero means there is a conflict (see [Booking Flow](/docs/booking-flow)) |
+| `response` | `0` = available. Non-zero means there is a conflict (see [Booking Flow](/booking-flow)) |
 | `price` | Accommodation charge before fees |
 | `cleaning_fee` | Cleaning fee (if applicable) |
 | `service_fee` | Service fee (if applicable) |
@@ -301,8 +301,8 @@ The price response tells you:
 
 You have now completed the read-only portion of the API. From here:
 
-- **[Booking Flow Guide](/docs/booking-flow)** -- Continue the journey: create a booking and process payment
-- **[Authentication](/docs/authentication)** -- Understand production keys, IP whitelisting, and security
-- **[Error Handling](/docs/errors)** -- Handle errors and rate limits gracefully
-- **[AI Integration](/docs/guides/ai-integration)** -- Use the API with AI function calling
-- **[API Reference](/docs/api/booking-brain-developer-api)** -- Full documentation for all 22 endpoints
+- **[Booking Flow Guide](/booking-flow)** -- Continue the journey: create a booking and process payment
+- **[Authentication](/authentication)** -- Understand production keys, IP whitelisting, and security
+- **[Error Handling](/errors)** -- Handle errors and rate limits gracefully
+- **[AI Integration](/guides/ai-integration)** -- Use the API with AI function calling
+- **[API Reference](/api/booking-brain-developer-api)** -- Full documentation for all 22 endpoints
