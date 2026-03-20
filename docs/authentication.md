@@ -8,6 +8,14 @@ keywords: [API key, authentication, sandbox key, production key, security, HTTPS
 
 # Authentication
 
+:::info What you'll learn
+By the end of this page you will understand:
+- How to authenticate requests with the `X-API-Key` header
+- The difference between sandbox and production keys
+- IP whitelisting, origin restrictions, and HTTPS requirements
+- Security best practices for storing and rotating keys
+:::
+
 Every request to the Booking Brain Developer API must include an API key. This page explains how keys work, the difference between sandbox and production, and how to keep your integration secure.
 
 ## How it works

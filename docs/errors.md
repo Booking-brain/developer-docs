@@ -8,6 +8,14 @@ keywords: [error handling, HTTP status codes, rate limiting, error response, 429
 
 # Error Handling
 
+:::info What you'll learn
+By the end of this page you will understand:
+- The error response format and how to parse validation errors
+- All HTTP status codes the API returns and what they mean
+- Rate limit headers, concrete limits, and how to handle 429 responses
+- Exponential backoff, idempotency, and resilient integration patterns
+:::
+
 The Booking Brain API uses standard HTTP status codes and returns consistent error objects across all endpoints. This page covers the error format, common error codes, rate limiting, and strategies for building resilient integrations.
 
 ## Error response format

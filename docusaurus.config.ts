@@ -160,6 +160,16 @@ const config: Config = {
           position: 'left',
         },
         {
+          to: '/docs/changelog',
+          label: 'Changelog',
+          position: 'left',
+        },
+        {
+          href: 'https://github.com/Booking-brain/developer-docs/issues',
+          label: 'Feedback',
+          position: 'right',
+        },
+        {
           href: 'https://github.com/Booking-brain',
           label: 'GitHub',
           position: 'right',

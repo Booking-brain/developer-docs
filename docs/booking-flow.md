@@ -8,7 +8,16 @@ keywords: [booking flow, checkout, payment processing, availability, pricing, in
 
 # Complete Booking Flow
 
-This guide walks through the entire booking journey from property search to payment, with full code examples. By the end, you will have a working integration that can search properties, check availability, calculate pricing, create a booking, and process a payment.
+:::info What you'll learn
+By the end of this guide you will be able to:
+- Search and filter properties by location, dates, and guest criteria
+- Build an availability calendar with start days and short break rules
+- Calculate accurate pricing including fees and discounts
+- Create a booking and collect guest details
+- Process card payments with 3D Secure support
+:::
+
+This guide walks through the entire booking journey from property search to payment, with full code examples.
 
 ## Overview
 

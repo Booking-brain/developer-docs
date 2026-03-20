@@ -14,6 +14,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'guides/node-sdk',
         'guides/ai-integration',
+        'guides/test-data',
       ],
     },
     'versioning',
