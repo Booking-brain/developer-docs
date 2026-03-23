@@ -21,7 +21,7 @@ Include this in every request as the `X-API-Key` header. No sign-up required.
 ## Base URL
 
 ```
-https://app.bookingbrain.com/api/v1/developer
+https://app.bookingbrain.com/api/v2/developer
 ```
 
 ## Example property IDs
@@ -52,28 +52,28 @@ Property IDs 1-10 do not exist. Always use IDs from search results or the table 
 ### Search properties
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&guests=4" \
+curl "https://app.bookingbrain.com/api/v2/developer/search?place=exmoor&guests=4" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
 ### Get property details
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/properties/3818" \
+curl "https://app.bookingbrain.com/api/v2/developer/properties/3818" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
 ### Check unavailable dates
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/properties/3818/unavailableDates?year=2026&month=7" \
+curl "https://app.bookingbrain.com/api/v2/developer/properties/3818/unavailableDates?year=2026&month=7" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
 ### Calculate price
 
 ```bash
-curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/3818/get-price" \
+curl -X POST "https://app.bookingbrain.com/api/v2/developer/properties/3818/get-price" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
   -H "Content-Type: application/json" \
   -d '{"start_date": "2026-08-01", "num_nights": 7, "num_guests": 4}'
@@ -82,28 +82,28 @@ curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/3818/get-
 ### List places
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/places" \
+curl "https://app.bookingbrain.com/api/v2/developer/places" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
 ### Get property images
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/properties/3818/images" \
+curl "https://app.bookingbrain.com/api/v2/developer/properties/3818/images" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
 ### Get property reviews
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/properties/3818/reviews?limit=5" \
+curl "https://app.bookingbrain.com/api/v2/developer/properties/3818/reviews?limit=5" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
 ### Check usage stats
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/usage/stats" \
+curl "https://app.bookingbrain.com/api/v2/developer/usage/stats" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 

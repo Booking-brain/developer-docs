@@ -4,7 +4,7 @@
 
 ## Base URL
 
-https://app.bookingbrain.com/api/v1/developer
+https://app.bookingbrain.com/api/v2/developer
 
 ## Authentication
 
@@ -152,7 +152,7 @@ Search holiday rental properties by location, dates, guest count, and amenities.
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&checkin=2026-07-01&nights=7&guests=4&page=1&limit=20" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/search?place=exmoor&checkin=2026-07-01&nights=7&guests=4&page=1&limit=20" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -160,7 +160,7 @@ curl -X GET "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&c
 import requests
 
 response = requests.get(
-    "https://app.bookingbrain.com/api/v1/developer/search",
+    "https://app.bookingbrain.com/api/v2/developer/search",
     params={
         "place": "exmoor",
         "checkin": "2026-07-01",
@@ -202,7 +202,7 @@ Retrieve current special offers and promotional prices across all properties. Re
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/specialoffers" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/specialoffers" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -305,7 +305,7 @@ Get full details for a specific property including title, description, location,
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -328,7 +328,7 @@ Look up a property using its URL-friendly slugs. Returns the same full detail as
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/porlock/meadow-cottage" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/porlock/meadow-cottage" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -375,7 +375,7 @@ Retrieve bookable extras and add-ons for a property such as dogs, cots, high cha
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/extras" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/extras" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -432,7 +432,7 @@ Retrieve published guest reviews for a property, ordered by most recent first. I
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/reviews?page=1&limit=10" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/reviews?page=1&limit=10" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -490,7 +490,7 @@ Retrieve all images for a property, split into legacy (original server) and GCS 
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/images" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/images" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -529,7 +529,7 @@ Retrieve detailed bedroom configuration for a property including bed types and s
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/bedrooms" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/bedrooms" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -564,7 +564,7 @@ Retrieve the property owner's contact details. Returns null data if no owner is 
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/owner-contact" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/owner-contact" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -586,7 +586,7 @@ Retrieve current special offers for a single property. Returns discounted date r
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/specialoffers" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/specialoffers" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -626,7 +626,7 @@ Retrieve all dates that are unavailable (booked or blocked) for a property. Use 
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/unavailableDates?year=2026&month=7" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/unavailableDates?year=2026&month=7" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -660,7 +660,7 @@ Retrieve the days of the week on which new bookings can start (e.g., Friday and 
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/startDays" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/startDays" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -694,7 +694,7 @@ Retrieve short break configuration including minimum night requirements, allowed
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/shortBreaks" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/shortBreaks" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -733,7 +733,7 @@ Retrieve specific available check-in dates for a property over the next N months
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/properties/42/start-dates?months=3" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/properties/42/start-dates?months=3" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -799,7 +799,7 @@ Response codes: `0` = available, `1` = booking conflict, `2` = dates unavailable
 
 **Example:**
 ```bash
-curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/42/get-price" \
+curl -X POST "https://app.bookingbrain.com/api/v2/developer/properties/42/get-price" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
   -H "Content-Type: application/json" \
   -d '{"start_date": "2026-07-04", "num_nights": 7, "num_guests": 4}'
@@ -809,7 +809,7 @@ curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/42/get-pr
 import requests
 
 response = requests.post(
-    "https://app.bookingbrain.com/api/v1/developer/properties/42/get-price",
+    "https://app.bookingbrain.com/api/v2/developer/properties/42/get-price",
     json={"start_date": "2026-07-04", "num_nights": 7, "num_guests": 4},
     headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
 )
@@ -850,7 +850,7 @@ Given a check-in date, returns the valid night durations available (e.g., 3, 4, 
 
 **Example:**
 ```bash
-curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/42/available-nights" \
+curl -X POST "https://app.bookingbrain.com/api/v2/developer/properties/42/available-nights" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
   -H "Content-Type: application/json" \
   -d '{"checkin_date": "2026-07-04"}'
@@ -933,7 +933,7 @@ Submit a new booking with guest details, dates, and pricing. The booking is attr
 
 **Example:**
 ```bash
-curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/save" \
+curl -X POST "https://app.bookingbrain.com/api/v2/developer/bookings/save" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
   -H "Content-Type: application/json" \
   -d '{
@@ -959,7 +959,7 @@ curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/save" \
 import requests
 
 response = requests.post(
-    "https://app.bookingbrain.com/api/v1/developer/bookings/save",
+    "https://app.bookingbrain.com/api/v2/developer/bookings/save",
     json={
         "property_id": 42,
         "checkin": "2026-07-04",
@@ -1030,7 +1030,7 @@ Validate a voucher code against a specific property, stay dates, and total price
 
 **Example:**
 ```bash
-curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/validate-voucher" \
+curl -X POST "https://app.bookingbrain.com/api/v2/developer/bookings/validate-voucher" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1116,7 +1116,7 @@ Payment failed:
 
 **Example:**
 ```bash
-curl -X POST "https://app.bookingbrain.com/api/v1/developer/bookings/processPayment" \
+curl -X POST "https://app.bookingbrain.com/api/v2/developer/bookings/processPayment" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1166,7 +1166,7 @@ Retrieve all active destination areas where properties are listed. Returns place
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/places" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/places" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -1227,7 +1227,7 @@ Retrieve all properties within a specific place/destination area with optional f
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/places/porlock?guests=4&checkin=2026-07-01&nights=7" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/places/porlock?guests=4&checkin=2026-07-01&nights=7" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -1271,7 +1271,7 @@ Retrieve aggregated API usage statistics for a specific client, optionally filte
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/usage/stats?client_id=1&start_date=2026-03-01&end_date=2026-03-19" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/usage/stats?client_id=1&start_date=2026-03-01&end_date=2026-03-19" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -1322,7 +1322,7 @@ Retrieve detailed, paginated API usage logs showing every request made by a clie
 
 **Example:**
 ```bash
-curl -X GET "https://app.bookingbrain.com/api/v1/developer/usage/logs?client_id=1&start_date=2026-03-01&page=1&limit=50" \
+curl -X GET "https://app.bookingbrain.com/api/v2/developer/usage/logs?client_id=1&start_date=2026-03-01&page=1&limit=50" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -1335,7 +1335,7 @@ Here is a complete end-to-end booking flow in Python:
 ```python
 import requests
 
-BASE = "https://app.bookingbrain.com/api/v1/developer"
+BASE = "https://app.bookingbrain.com/api/v2/developer"
 HEADERS = {"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"}
 
 # 1. Search for properties in Porlock for 4 guests, 7 nights

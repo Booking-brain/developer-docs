@@ -4,7 +4,7 @@
 
 ## Base URL
 
-https://app.bookingbrain.com/api/v1/developer
+https://app.bookingbrain.com/api/v2/developer
 
 ## Authentication
 

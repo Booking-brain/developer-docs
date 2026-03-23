@@ -6,7 +6,7 @@
  * GitHub issue automatically. User never sees the AI analysis.
  */
 
-const API_BASE = "https://app.bookingbrain.com/api/v1/developer";
+const API_BASE = "https://app.bookingbrain.com/api/v2/developer";
 const API_KEY = "bb_6c4e584be61667d4d50928d0d0039ed2";
 const WIDGET_ID = "bb-bug-report";
 const PANEL_ID = "bb-bug-report-panel";

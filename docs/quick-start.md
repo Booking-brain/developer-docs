@@ -33,7 +33,7 @@ Search for holiday properties in Exmoor that sleep at least 4 guests:
 <TabItem value="curl" label="cURL" default>
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&guests=4" \
+curl "https://app.bookingbrain.com/api/v2/developer/search?place=exmoor&guests=4" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -42,7 +42,7 @@ curl "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&guests=4
 
 ```javascript
 const response = await fetch(
-  "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&guests=4",
+  "https://app.bookingbrain.com/api/v2/developer/search?place=exmoor&guests=4",
   {
     headers: {
       "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
@@ -61,7 +61,7 @@ console.log(data);
 import requests
 
 response = requests.get(
-    "https://app.bookingbrain.com/api/v1/developer/search",
+    "https://app.bookingbrain.com/api/v2/developer/search",
     params={"place": "exmoor", "guests": 4},
     headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
 )
@@ -127,7 +127,7 @@ Pick a property from the search results and fetch its full details using the `id
 <TabItem value="curl" label="cURL" default>
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/properties/312" \
+curl "https://app.bookingbrain.com/api/v2/developer/properties/312" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -136,7 +136,7 @@ curl "https://app.bookingbrain.com/api/v1/developer/properties/312" \
 
 ```javascript
 const response = await fetch(
-  "https://app.bookingbrain.com/api/v1/developer/properties/312",
+  "https://app.bookingbrain.com/api/v2/developer/properties/312",
   {
     headers: {
       "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
@@ -156,7 +156,7 @@ console.log(property.checkin);      // "16:00"
 
 ```python
 response = requests.get(
-    "https://app.bookingbrain.com/api/v1/developer/properties/312",
+    "https://app.bookingbrain.com/api/v2/developer/properties/312",
     headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
 )
 
@@ -179,7 +179,7 @@ Before a guest can book, check which dates are unavailable:
 <TabItem value="curl" label="cURL" default>
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/properties/312/unavailableDates?year=2026&month=7" \
+curl "https://app.bookingbrain.com/api/v2/developer/properties/312/unavailableDates?year=2026&month=7" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 
@@ -188,7 +188,7 @@ curl "https://app.bookingbrain.com/api/v1/developer/properties/312/unavailableDa
 
 ```javascript
 const response = await fetch(
-  "https://app.bookingbrain.com/api/v1/developer/properties/312/unavailableDates?year=2026&month=7",
+  "https://app.bookingbrain.com/api/v2/developer/properties/312/unavailableDates?year=2026&month=7",
   {
     headers: {
       "X-API-Key": "bb_sandbox_test_key_do_not_use_in_production",
@@ -205,7 +205,7 @@ const unavailableDates = await response.json();
 
 ```python
 response = requests.get(
-    "https://app.bookingbrain.com/api/v1/developer/properties/312/unavailableDates",
+    "https://app.bookingbrain.com/api/v2/developer/properties/312/unavailableDates",
     params={"year": "2026", "month": "7"},
     headers={"X-API-Key": "bb_sandbox_test_key_do_not_use_in_production"},
 )
@@ -227,7 +227,7 @@ Once the guest has selected dates, calculate the exact price:
 <TabItem value="curl" label="cURL" default>
 
 ```bash
-curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/312/get-price" \
+curl -X POST "https://app.bookingbrain.com/api/v2/developer/properties/312/get-price" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production" \
   -H "Content-Type: application/json" \
   -d '{
@@ -242,7 +242,7 @@ curl -X POST "https://app.bookingbrain.com/api/v1/developer/properties/312/get-p
 
 ```javascript
 const response = await fetch(
-  "https://app.bookingbrain.com/api/v1/developer/properties/312/get-price",
+  "https://app.bookingbrain.com/api/v2/developer/properties/312/get-price",
   {
     method: "POST",
     headers: {
@@ -268,7 +268,7 @@ console.log(pricing.cleaning_fee);      // 45.00
 
 ```python
 response = requests.post(
-    "https://app.bookingbrain.com/api/v1/developer/properties/312/get-price",
+    "https://app.bookingbrain.com/api/v2/developer/properties/312/get-price",
     json={
         "start_date": "2026-07-04",
         "num_nights": 7,

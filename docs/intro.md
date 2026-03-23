@@ -33,10 +33,10 @@ The Developer API opens all of this up to you. Instead of using the default Book
 
 | | |
 |---|---|
-| **Base URL** | `https://app.bookingbrain.com/api/v1/developer` |
+| **Base URL** | `https://app.bookingbrain.com/api/v2/developer` |
 | **Authentication** | `X-API-Key` header |
 | **Format** | JSON |
-| **Versioning** | URL-based (`/api/v1`) |
+| **Versioning** | URL-based (`/api/v2`) |
 | **Rate limiting** | Per-minute, per-client |
 | **Endpoints** | 22 across 7 groups |
 
@@ -55,7 +55,7 @@ The Developer API opens all of this up to you. Instead of using the default Book
 Search for pet-friendly cottages in Exmoor:
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor&guests=4&pets=yes" \
+curl "https://app.bookingbrain.com/api/v2/developer/search?place=exmoor&guests=4&pets=yes" \
   -H "X-API-Key: bb_sandbox_test_key_do_not_use_in_production"
 ```
 

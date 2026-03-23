@@ -23,13 +23,13 @@ Every request to the Booking Brain Developer API must include an API key. This p
 Pass your API key in the `X-API-Key` header on every request:
 
 ```bash
-curl "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor" \
+curl "https://app.bookingbrain.com/api/v2/developer/search?place=exmoor" \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 
 ```javascript
 const response = await fetch(
-  "https://app.bookingbrain.com/api/v1/developer/search?place=exmoor",
+  "https://app.bookingbrain.com/api/v2/developer/search?place=exmoor",
   {
     headers: {
       "X-API-Key": "YOUR_API_KEY",
@@ -42,7 +42,7 @@ const response = await fetch(
 import requests
 
 response = requests.get(
-    "https://app.bookingbrain.com/api/v1/developer/search",
+    "https://app.bookingbrain.com/api/v2/developer/search",
     params={"place": "exmoor"},
     headers={"X-API-Key": "YOUR_API_KEY"},
 )
@@ -109,7 +109,7 @@ All API requests must be made over HTTPS. Requests made over plain HTTP will be 
 All API requests use a single base URL. There is no separate sandbox server -- the sandbox key and production key hit the same endpoint:
 
 ```
-https://app.bookingbrain.com/api/v1/developer
+https://app.bookingbrain.com/api/v2/developer
 ```
 
 The API key determines the behaviour (sandbox mock responses vs real operations).

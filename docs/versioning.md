@@ -13,10 +13,10 @@ The Booking Brain Developer API uses URL-based versioning to ensure your integra
 ## Current version
 
 ```
-https://app.bookingbrain.com/api/v1/developer
+https://app.bookingbrain.com/api/v2/developer
 ```
 
-The current and only version is **v1**. The version is part of the base URL.
+The current version is **v2**. The version is part of the base URL.
 
 ## What is a breaking change?
 

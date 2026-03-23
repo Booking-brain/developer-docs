@@ -35,7 +35,7 @@ All examples use JavaScript with `fetch`. The same flow applies to any language.
 
 ```javascript
 const API_KEY = "bb_sandbox_test_key_do_not_use_in_production";
-const BASE_URL = "https://app.bookingbrain.com/api/v1/developer";
+const BASE_URL = "https://app.bookingbrain.com/api/v2/developer";
 
 async function api(path, options = {}) {
   const response = await fetch(`${BASE_URL}${path}`, {
@@ -401,7 +401,7 @@ Here is the full flow in a single function:
 
 ```javascript
 const API_KEY = "bb_sandbox_test_key_do_not_use_in_production";
-const BASE_URL = "https://app.bookingbrain.com/api/v1/developer";
+const BASE_URL = "https://app.bookingbrain.com/api/v2/developer";
 
 async function api(path, options = {}) {
   const response = await fetch(`${BASE_URL}${path}`, {

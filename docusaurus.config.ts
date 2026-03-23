@@ -47,7 +47,7 @@ const config: Config = {
           docItemComponent: '@theme/ApiItem',
           lastVersion: 'current',
           versions: {
-            current: {label: 'v1'},
+            current: {label: 'v2'},
           },
         },
         blog: false,

@@ -76,7 +76,7 @@ import requests
 import json
 
 API_KEY = "bb_sandbox_test_key_do_not_use_in_production"
-BASE_URL = "https://app.bookingbrain.com/api/v1/developer"
+BASE_URL = "https://app.bookingbrain.com/api/v2/developer"
 
 # Define Booking Brain tools for Claude
 tools = [

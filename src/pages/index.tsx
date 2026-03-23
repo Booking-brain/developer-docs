@@ -26,7 +26,7 @@ function HomepageHeader() {
       <div className={styles.heroInner}>
         <div className={styles.heroLabel}>
           <span className={styles.heroLabelDot} />
-          REST API v1 — Now Available
+          REST API v2 — Now Available
         </div>
         <Heading as="h1" className={styles.heroTitle}>
           Build with the{' '}
@@ -189,7 +189,7 @@ function CodePreviewSection() {
                 <span className={styles.codeComment}>{'# Search pet-friendly properties in Porlock\n'}</span>
                 <span className={styles.codeFunction}>{'curl'}</span>
                 {' '}
-                <span className={styles.codeUrl}>{'\"https://app.bookingbrain.com/api/v1/developer/search?place=porlock&guests=4&pets=yes\"'}</span>
+                <span className={styles.codeUrl}>{'\"https://app.bookingbrain.com/api/v2/developer/search?place=porlock&guests=4&pets=yes\"'}</span>
                 {' \\\n'}
                 {'  -H '}
                 <span className={styles.codeString}>{'"X-API-Key: bb_sandbox_test_key..."'}</span>

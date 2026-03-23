@@ -10,7 +10,7 @@ keywords: [changelog, API updates, new features, breaking changes, release notes
 
 All notable changes to the Booking Brain Developer API are documented here.
 
-## v1.0.0 — 2026-03-19
+## v2.0.0 — 2026-03-19
 
 **Initial public release** of the Booking Brain Developer API.
 

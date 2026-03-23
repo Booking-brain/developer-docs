@@ -188,7 +188,7 @@ def call_with_retry(url, headers, max_retries=3, **kwargs):
 
 ```javascript
 const API_KEY = process.env.BOOKINGBRAIN_API_KEY;
-const BASE_URL = "https://app.bookingbrain.com/api/v1/developer";
+const BASE_URL = "https://app.bookingbrain.com/api/v2/developer";
 
 async function searchProperties(params) {
   const query = new URLSearchParams(params).toString();
@@ -230,7 +230,7 @@ import os
 import requests
 
 API_KEY = os.environ["BOOKINGBRAIN_API_KEY"]
-BASE_URL = "https://app.bookingbrain.com/api/v1/developer"
+BASE_URL = "https://app.bookingbrain.com/api/v2/developer"
 
 
 class BookingBrainError(Exception):
