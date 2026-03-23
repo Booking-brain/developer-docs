@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Booking Brain Developer API
-  version: 1.0.0
+  version: 2.0.0
   license:
     name: Proprietary
     url: https://www.bookingbrain.com/terms
