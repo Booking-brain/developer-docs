@@ -6,7 +6,9 @@ import {
   LogOut, User, Check, ArrowRight, RefreshCw, Eye, EyeOff, Loader2, AlertTriangle,
 } from 'lucide-react';
 
-const API_BASE = 'https://app.bookingbrain.com/api/v2';
+const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  ? 'http://localhost:3001/api/v1'
+  : 'https://app.bookingbrain.com/api/v1';
 
 /* ============================================================
    AUTH HELPERS
@@ -581,7 +583,7 @@ function Dashboard({ user, onSignOut }: { user: any; onSignOut: () => void }) {
                 <span style={{ color: '#e2e8f0' }}>{' '}</span>
                 <span style={{ color: '#60a5fa' }}>{'fetch'}</span>
                 <span style={{ color: '#e2e8f0' }}>{'(\n'}</span>
-                <span style={{ color: '#4ade80' }}>{`  'https://app.bookingbrain.com/api/v2/developer/search?place=porlock'\n`}</span>
+                <span style={{ color: '#4ade80' }}>{`  'https://app.bookingbrain.com/api/v1/developer/search?place=porlock'\n`}</span>
                 <span style={{ color: '#e2e8f0' }}>{'  { '}</span>
                 <span style={{ color: '#60a5fa' }}>{'headers'}</span>
                 <span style={{ color: '#e2e8f0' }}>{': { '}</span>

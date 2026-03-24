@@ -238,16 +238,17 @@ body {
    DEVELOPER PORTAL NAVBAR LINK
    ============================================================ */
 .navbar-portal-link {
-  background: var(--bb-brand-primary) !important;
+  background: var(--bb-success) !important;
   color: #fff !important;
   border-radius: 6px !important;
   padding: 6px 16px !important;
   font-weight: 600 !important;
   font-size: 13px !important;
-  transition: background 0.15s !important;
+  border: none !important;
+  transition: all 0.15s !important;
 }
 .navbar-portal-link:hover {
-  background: var(--bb-brand-primary-hover) !important;
+  background: #008f6b !important;
   color: #fff !important;
 }
 
