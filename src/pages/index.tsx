@@ -263,13 +263,13 @@ function CtaSection() {
         <div className={styles.ctaButtons}>
           <Link
             className={clsx('button button--lg', styles.ctaPrimary)}
-            to="/quick-start">
-            Quick Start Guide
+            to="/portal">
+            Get Your API Key
           </Link>
           <Link
             className={clsx('button button--lg', styles.ctaSecondary)}
-            to="/authentication">
-            Authentication Docs
+            to="/quick-start">
+            Quick Start Guide
           </Link>
         </div>
       </div>

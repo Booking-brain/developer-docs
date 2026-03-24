@@ -193,6 +193,12 @@ const config: Config = {
           position: 'left',
         },
         {
+          to: '/portal',
+          label: 'Developer Portal',
+          position: 'right',
+          className: 'navbar-portal-link',
+        },
+        {
           href: 'https://github.com/Booking-brain/developer-docs/issues',
           label: 'Feedback',
           position: 'right',
