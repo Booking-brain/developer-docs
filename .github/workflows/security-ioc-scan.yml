@@ -1,0 +1,163 @@
+name: Security IoC Scan
+
+# Detects Shai-Hulud npm supply-chain malware patterns in PR diffs and direct
+# pushes to master. Added 2026-05-05 after the Booking-brain org incident
+# (4 repos infected via stolen PATs in April 2026).
+#
+# IoC patterns are derived from Nitin's 2026-05-04 forensic report. To extend
+# the pattern set, edit the `Scan diff` step below.
+#
+# To copy this workflow to another repo: copy this entire file to
+# `.github/workflows/security-ioc-scan.yml` in that repo. No secrets needed.
+
+on:
+  pull_request:
+    # Catches the malware before it lands in master via PR
+  push:
+    branches: [master, main]
+    # Also catches direct pushes / force-pushes to default branch
+
+permissions:
+  contents: read
+
+jobs:
+  ioc-scan:
+    name: Scan diff for Shai-Hulud and similar IoCs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve diff range
+        id: range
+        env:
+          GH_EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+        run: |
+          if [ "$GH_EVENT" = "pull_request" ]; then
+            BASE="$PR_BASE"
+            HEAD="$PR_HEAD"
+          else
+            BASE="$PUSH_BEFORE"
+            HEAD="$PUSH_AFTER"
+            # First push to a new branch reports BEFORE=000... — fall back to the
+            # earliest commit so we still scan something.
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+              BASE=$(git rev-list --max-parents=0 HEAD | head -1)
+            fi
+          fi
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          echo "head=$HEAD" >> "$GITHUB_OUTPUT"
+
+      - name: Scan diff for malware indicators
+        env:
+          BASE: ${{ steps.range.outputs.base }}
+          HEAD: ${{ steps.range.outputs.head }}
+        run: |
+          set -uo pipefail
+
+          DIFF=$(git diff "$BASE...$HEAD")
+          if [ -z "$DIFF" ]; then
+            echo "✅ No diff content to scan."
+            exit 0
+          fi
+
+          FOUND=0
+          MATCHES=""
+
+          add_match () {
+            FOUND=1
+            MATCHES="$MATCHES
+- $1"
+          }
+
+          # ---- Code-pattern IoCs (Booking-brain Shai-Hulud forensic report) ----
+
+          # Campaign tag — global['!']='9-3900' or similar
+          if echo "$DIFF" | grep -qE "global\['!'\]"; then
+            add_match "Campaign tag \`global['!']\` (Shai-Hulud signature)"
+          fi
+
+          # Obfuscated decoder var — var _\$_<8 hex chars>=(function(...))
+          if echo "$DIFF" | grep -qE "_\\\$_[0-9a-f]+"; then
+            add_match "Obfuscated decoder variable \`_\\\$_<hex>\` (Shai-Hulud signature)"
+          fi
+
+          # Binance Smart Chain RPC C2 endpoint
+          if echo "$DIFF" | grep -q "bsc-dataseed"; then
+            add_match "C2 endpoint \`bsc-dataseed\` (Binance Smart Chain RPC used as Shai-Hulud C2)"
+          fi
+
+          # Alternative blockchain C2 (TRON, Aptos)
+          if echo "$DIFF" | grep -qE "trongrid|aptoslabs|aptos-mainnet|aptos-fullnode"; then
+            add_match "Alternative blockchain RPC C2 (TRON / Aptos)"
+          fi
+
+          # Decoder function names from the captured Shai-Hulud sample
+          if echo "$DIFF" | grep -qE "(Tgw|sfL)\\("; then
+            add_match "Shai-Hulud decoder function \`Tgw(\` or \`sfL(\`"
+          fi
+
+          # ---- .gitignore weakening ----
+          # The malware removes .env entries from .gitignore so a routine
+          # `git add .` will silently commit credential-bearing files.
+          if echo "$DIFF" | grep -qE "^-\.env(\.[a-z]+)?$"; then
+            add_match "\`.env*\` entries being REMOVED from .gitignore (credential-leak prep)"
+          fi
+
+          # The malware adds `config.bat` to .gitignore so a Windows-side
+          # dropped payload won't show in `git status`.
+          if echo "$DIFF" | grep -qE "^\+config\.bat$"; then
+            add_match "\`config.bat\` being added to .gitignore (Windows-side payload concealment)"
+          fi
+
+          # ---- Suspicious config-file payload ----
+          # Shai-Hulud appends ~5 KB of single-line obfuscated JS after the
+          # `};` of an existing config module. Detect any added line over
+          # 1000 chars in a config file.
+          CONFIG_FILES=$(git diff --name-only "$BASE...$HEAD" \
+            | grep -E "\.(config|babel|tailwind|ecosystem)\.(js|ts|cjs|mjs)$" \
+            || true)
+          if [ -n "$CONFIG_FILES" ]; then
+            LONG_LINE=$(git diff "$BASE...$HEAD" -- $CONFIG_FILES \
+              | awk '/^\+/ && length > 1000 { print length; exit }')
+            if [ -n "$LONG_LINE" ]; then
+              add_match "Suspiciously long single-line addition (\`$LONG_LINE\` chars) to a config file (possible obfuscated payload)"
+            fi
+          fi
+
+          # ---- Report ----
+          if [ "$FOUND" = "1" ]; then
+            echo "::error::🚨 SECURITY: possible Shai-Hulud-family supply-chain malware detected"
+            echo ""
+            echo "## 🚨 Security IoC Scan — FAILED"
+            echo ""
+            echo "### Matched indicators"
+            echo "$MATCHES"
+            echo ""
+            echo "### Context"
+            echo "These patterns are associated with the **Shai-Hulud npm supply-chain"
+            echo "malware** (active since Sept 2025). The Booking-brain org was hit by"
+            echo "this exact family in April 2026 — see Nitin's 2026-05-04 forensic"
+            echo "report. The malware was injected via stolen PATs and exfiltrates"
+            echo "credentials via Binance Smart Chain RPC as a C2 channel."
+            echo ""
+            echo "### What to do"
+            echo "1. **Do NOT merge this PR.**"
+            echo "2. Inspect the matching diff lines manually."
+            echo "3. If confirmed malicious:"
+            echo "   - Revoke the PR author's GitHub PAT immediately."
+            echo "   - Notify the org owner / open a security incident."
+            echo "   - Re-run the IoC sweep on every prod server + dev machine."
+            echo "4. If false positive (e.g. crypto integration legitimately uses"
+            echo "   \`bsc-dataseed\`), document the exception in the PR description"
+            echo "   and tag a maintainer for explicit override review."
+            exit 1
+          fi
+
+          echo "✅ No Shai-Hulud IoC patterns detected in this diff."
