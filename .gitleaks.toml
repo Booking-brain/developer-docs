@@ -1,0 +1,123 @@
+# gitleaks configuration for Booking-brain repos
+# Scanned by .github/workflows/secret-scan.yml on every PR + push to master.
+# See https://github.com/gitleaks/gitleaks for the rule schema.
+
+[extend]
+# Inherit gitleaks' default rule set (AWS, Anthropic, OpenAI, GitHub PATs, generic high-entropy, etc.)
+# and override / add the patterns specific to BookingBrain.
+useDefault = true
+
+# ----------------------------------------------------------------------------
+# Custom rules tailored to credentials this codebase actually uses
+# ----------------------------------------------------------------------------
+
+[[rules]]
+id = "bb-sendgrid-key"
+description = "SendGrid SMTP API key (SG.<22>.<43>)"
+regex = '''SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}'''
+keywords = ["SG."]
+tags = ["secret", "sendgrid", "incident-2026-04-30"]
+
+[[rules]]
+id = "bb-anthropic-key"
+description = "Anthropic API key (sk-ant-*)"
+regex = '''sk-ant-(?:api03|admin01)-[A-Za-z0-9_-]{80,}'''
+keywords = ["sk-ant-"]
+tags = ["secret", "anthropic", "incident-2026-04-30"]
+
+[[rules]]
+id = "bb-openai-key"
+description = "OpenAI API key (sk-* / sk-proj-*)"
+regex = '''sk-(?:proj-)?[A-Za-z0-9_-]{40,}'''
+keywords = ["sk-"]
+tags = ["secret", "openai"]
+
+[[rules]]
+id = "bb-github-pat"
+description = "GitHub Personal Access Token (classic ghp_, fine-grained github_pat_, app gho_/ghu_/ghs_/ghr_)"
+regex = '''(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{82,}'''
+keywords = ["ghp_", "gho_", "ghu_", "ghs_", "ghr_", "github_pat_"]
+tags = ["secret", "github", "incident-2026-04-30"]
+
+[[rules]]
+id = "bb-sagepay-key"
+description = "SagePay/Opayo VendorTxKey or Password (50–80-char alphanumeric next to SAGEPAY_*)"
+regex = '''(?i)SAGEPAY_(?:AUTH_KEY|PASSWORD|VENDOR(?:_TX)?_KEY)\s*[:=]\s*['"]?[A-Za-z0-9]{40,80}'''
+keywords = ["SAGEPAY_"]
+tags = ["secret", "sagepay", "payments", "incident-2026-04-30"]
+
+[[rules]]
+id = "bb-recaptcha-secret"
+description = "Google reCAPTCHA secret key (40-char alphanumeric next to RECAPTCHA_SECRET_KEY)"
+regex = '''(?i)RECAPTCHA_SECRET_KEY\s*[:=]\s*['"]?6L[A-Za-z0-9_-]{38}'''
+keywords = ["RECAPTCHA_SECRET_KEY"]
+tags = ["secret", "google", "recaptcha", "incident-2026-04-30"]
+
+[[rules]]
+id = "bb-elasticsearch-api-key"
+description = "Elasticsearch API key (base64 next to ELASTICSEARCH_API_KEY)"
+regex = '''(?i)ELASTICSEARCH_API_KEY\s*[:=]\s*['"]?[A-Za-z0-9+/=]{40,}'''
+keywords = ["ELASTICSEARCH_API_KEY"]
+tags = ["secret", "elasticsearch", "incident-2026-04-30"]
+
+[[rules]]
+id = "bb-jwt-secret"
+description = "Hardcoded JWT signing secret (JWT_SECRET assigned to a literal of 16+ chars)"
+regex = '''(?i)JWT_SECRET\s*[:=]\s*['"][A-Za-z0-9!@#$%^&*_+=-]{16,}['"]'''
+keywords = ["JWT_SECRET"]
+tags = ["secret", "jwt", "incident-2026-04-30"]
+
+[[rules]]
+id = "bb-mariadb-password-literal"
+description = "Hardcoded DB_PASSWORD literal in source (matches the leaked stage$bookingbrain#chris pattern shape: $|#|! mid-string)"
+regex = '''(?i)DB_PASSWORD\s*[:=]\s*['"][^'"\s]*[\$#!@][^'"\s]{4,}['"]'''
+keywords = ["DB_PASSWORD"]
+tags = ["secret", "db", "incident-2026-04-30"]
+
+[[rules]]
+id = "bb-gcp-service-account-private-key"
+description = "GCP service account JSON private_key field"
+regex = '''"private_key"\s*:\s*"-----BEGIN (?:RSA )?PRIVATE KEY-----'''
+keywords = ["private_key", "BEGIN PRIVATE KEY", "BEGIN RSA PRIVATE KEY"]
+tags = ["secret", "gcp"]
+
+[[rules]]
+id = "bb-malware-blockchain-loader-marker"
+description = "Marker strings from the 2026-04-30 blockchain-loader malware — block any PR that re-introduces them"
+regex = '''(?:_\$_1e42|sfL\(.wuqkt|api\.trongrid\.io|fullnode\.mainnet\.aptoslabs\.com|Tgw\(2509\)|global\["_V"\]\s*=\s*['"]A?9-3900)'''
+keywords = ["_$_1e42", "trongrid", "aptoslabs", "Tgw(2509)"]
+tags = ["malware", "incident-2026-04-30"]
+
+# ----------------------------------------------------------------------------
+# Allowlist — false positives we have explicitly accepted
+# ----------------------------------------------------------------------------
+
+[allowlist]
+description = "Globally trusted paths and known-safe patterns"
+paths = [
+  '''node_modules/''',
+  '''dist/''',
+  '''.git/''',
+  '''package-lock\.json$''',
+  '''yarn\.lock$''',
+  '''docs/changelog\.md$''',                                      # incident records reference (already-rotated) old token shapes
+  '''docs/incident-2026-04-30-rotation-checklist\.md$''',         # same — incident record needs the old values for verification curls
+]
+
+regexes = [
+  # CakePHP password hash salt is a known constant, not a credential
+  '''DYhG93b0qyJfIxfs2guVoUubWwvniR2G0FgaC9mi12''',
+  # reCAPTCHA documented test keys (for local dev only)
+  '''6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI''',
+  '''6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe''',
+  # Stripe documented test publishable keys
+  '''pk_test_TYooMQauvdEDq54NiTphI7jx''',
+]
+
+# ----------------------------------------------------------------------------
+# Stop-words to reduce false positives on generic high-entropy strings
+# ----------------------------------------------------------------------------
+
+[allowlist.stopwords]
+# Common substrings that indicate a fixture / placeholder / test value, not a real secret
+include = ["EXAMPLE", "FAKE", "TEST_KEY", "PLACEHOLDER", "your-key-here", "REPLACE_ME", "xxxxxxxx"]
