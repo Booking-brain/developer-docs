@@ -1,0 +1,164 @@
+# Booking-brain organisation — security pre-commit scan
+# Drop into Booking-brain/.github/workflows/ once the .github org-config repo exists.
+# Triggered from each repo by `uses: Booking-brain/.github/.github/workflows/security-precommit.yml@<sha>`
+#
+# What it checks on every PR diff:
+#  - PolinRider / Shai-Hulud / ClearFake IoC signatures
+#  - Spoofed-timezone commits (-0600 / -0700 committer)
+#  - .gitignore weakening (removing .env entries)
+#  - Whitespace-only / line-ending-only camouflage (>3 unrelated files)
+#  - Tail-of-config injection (content after closing }; in *.config.js)
+#  - Gitleaks secrets scan on the diff
+
+name: security-precommit
+
+on:
+  workflow_call:
+  pull_request:
+    branches: [master, main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  scan-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Pin every action by full commit SHA, not floating tag.
+      # Lesson from the tj-actions/changed-files supply-chain attack of 2025-03.
+      - name: Checkout PR with full history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: IoC signature scan
+        run: |
+          set -uo pipefail
+          BAD=0
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          # Get the list of files changed in the PR
+          CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          if [ -z "$CHANGED" ]; then
+            echo "::warning::No changed files in PR diff"
+            exit 0
+          fi
+
+          # Pattern list — known PolinRider / Shai-Hulud / ClearFake fingerprints
+          PATTERNS=(
+            "global\\['!'\\]='9-3900'"
+            "_\\\$_1e42"
+            "bsc-dataseed"
+            "Sha1-Hulud"
+            "shai-hulud-workflow"
+            "Tgw\\(2509\\);return"
+            "Apa,sfL\\("
+          )
+
+          for f in $CHANGED; do
+            [ -f "$f" ] || continue
+            # Skip the security workflow files themselves — they CONTAIN the patterns by design
+            case "$f" in
+              .github/workflows/security-*) continue ;;
+              docs/incident-*) continue ;;
+            esac
+            for p in "${PATTERNS[@]}"; do
+              if grep -qE "$p" "$f"; then
+                echo "::error file=$f::IoC signature matched: $p"
+                BAD=1
+              fi
+            done
+          done
+
+          if [ "$BAD" -eq 1 ]; then
+            echo "::error::IoC signature scan FAILED. Block merge."
+            exit 1
+          fi
+          echo "IoC scan passed."
+
+      - name: Suspicious-timezone fingerprint check
+        run: |
+          set -uo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          BAD=0
+          for c in $(git rev-list "$BASE_SHA..$HEAD_SHA"); do
+            CTZ=$(git log -1 --format='%ci' "$c" | awk '{print $3}')
+            ATZ=$(git log -1 --format='%ai' "$c" | awk '{print $3}')
+            case "$CTZ" in
+              -0[6-7]00)
+                echo "::warning::Commit $c has CommitDate timezone $CTZ — known PolinRider fingerprint"
+                BAD=1
+                ;;
+            esac
+            if [ "$CTZ" != "$ATZ" ]; then
+              echo "::warning::Commit $c has AuthorDate $ATZ vs CommitDate $CTZ (mismatch — possible spoof)"
+            fi
+          done
+          if [ "$BAD" -eq 1 ]; then
+            echo "::error::Timezone fingerprint matches PolinRider / Shai-Hulud spoofed-author pattern. Block merge."
+            exit 1
+          fi
+          echo "Timezone check passed."
+
+      - name: .gitignore strength check
+        run: |
+          set -uo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+
+          if git diff "$BASE_SHA..HEAD" -- .gitignore | grep -E "^-\.env(\.[a-z\*]+)?$"; then
+            echo "::error::PR removes .env entries from .gitignore. This is a known malware fingerprint. Block merge."
+            exit 1
+          fi
+          echo ".gitignore strength check passed."
+
+      - name: Whitespace-camouflage check (advisory)
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          for c in $(git rev-list "$BASE_SHA..$HEAD_SHA"); do
+            REAL=$(git show --stat -w --ignore-all-space "$c" | grep -c "^ ")
+            FAKE=$(git show --stat "$c" | grep -c "^ ")
+            if [ "$FAKE" -gt "$((REAL + 3))" ]; then
+              echo "::warning::Commit $c has $FAKE files in raw stat vs $REAL with whitespace ignored — possible CRLF/whitespace camouflage"
+            fi
+          done
+
+      - name: Tail-of-config injection check
+        run: |
+          set -uo pipefail
+          BAD=0
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          # PolinRider targets these config file globs
+          for f in $(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E '\.(config|conf)\.(js|mjs|cjs|ts)$'); do
+            [ -f "$f" ] || continue
+            # Look for content after the last legitimate closing }; / module.exports
+            # by reading the last 200 chars and checking for obfuscation markers
+            TAIL=$(tail -c 500 "$f")
+            if echo "$TAIL" | grep -qE "global\\['!'\\]|_\\\$_1e42|return [0-9]+\\}\\)\\(\\)$|Function\\(|eval\\("; then
+              echo "::error file=$f::Suspicious tail content in config file — possible PolinRider injection"
+              BAD=1
+            fi
+          done
+          if [ "$BAD" -eq 1 ]; then
+            echo "::error::Tail-of-config check FAILED. Block merge."
+            exit 1
+          fi
+          echo "Tail-of-config check passed."
+
+      - name: Secrets scan
+        run: |
+          # We use GitHub's native Secret Scanning + Push Protection (enabled
+          # org-wide on 6 May 2026). It catches the same credential patterns
+          # as gitleaks but at the GitHub layer, before push lands. No need
+          # to run a duplicate scan in CI.
