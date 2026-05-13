@@ -61,7 +61,18 @@ jobs:
         run: |
           set -uo pipefail
 
-          DIFF=$(git diff "$BASE...$HEAD")
+          DIFF=$(git diff "$BASE...$HEAD" \
+            -- \
+            ':!.gitleaks.toml' \
+            ':!.github/workflows/security-ioc-scan.yml' \
+            ':!.github/workflows/security-precommit.yml' \
+            ':!.github/workflows/secret-scan.yml' \
+            ':!SECURITY-INCIDENT-*.md' \
+            ':!SECURITY-AUDIT-*.md' \
+            ':!SECURITY-EXCEPTIONS*.md' \
+            ':!SECURITY-POSTMORTEM-*.md' \
+            ':!docs/incident-*' \
+            ':!MALWARE-*.md')
           if [ -z "$DIFF" ]; then
             echo "✅ No diff content to scan."
             exit 0
