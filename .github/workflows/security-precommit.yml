@@ -86,6 +86,40 @@ esac
           fi
           echo "IoC scan passed."
 
+      - name: Reject single lines > 1000 chars (Shai-Hulud minified-payload signal)
+        # Shai-Hulud-family payloads are always a single minified line >5000 chars.
+        # Legitimate source rarely exceeds 200. High-precision, near-zero-FP signal.
+        # Driven by: rival-review consensus (Gemini-3.1-pro, GPT-5.4) — see 2026-05-13.
+        run: |
+          set -uo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          BAD_LINE=$(git diff "$BASE_SHA" "$HEAD_SHA" -- \
+              ':!*.lock' ':!**/package-lock.json' ':!**/yarn.lock' \
+              ':!**/pnpm-lock.yaml' ':!**/composer.lock' \
+              ':!.gitleaks.toml' \
+              ':!**/*.min.js' ':!**/*.min.css' ':!**/*.map' \
+              ':!**/dist/**' ':!**/build/**' ':!**/node_modules/**' \
+              ':!.github/workflows/security-*.yml' \
+              ':!docs/incident-*' ':!SECURITY-*.md' ':!MALWARE-*.md' \
+            | awk '/^\+[^+]/ {
+                line = substr($0, 2);
+                if (length(line) > 1000) {
+                  print length(line);
+                  exit
+                }
+              }')
+
+          if [ -n "$BAD_LINE" ]; then
+            echo "::error::A single added line exceeds 1000 characters ($BAD_LINE chars)."
+            echo "Shai-Hulud-family malware payloads are always a single minified line >5000 chars."
+            echo "If this is a legitimate long line (e.g. a generated config), exempt the file"
+            echo "in the workflow's git-diff pathspec list (':!path/to/file')."
+            exit 1
+          fi
+          echo "✅ All added lines under 1000 chars."
+
       - name: Suspicious-timezone fingerprint check
         run: |
           set -uo pipefail
