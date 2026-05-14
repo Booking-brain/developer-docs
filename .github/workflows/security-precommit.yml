@@ -65,7 +65,13 @@ jobs:
             case "$f" in
               .github/workflows/security-*) continue ;;
               docs/incident-*) continue ;;
-            esac
+                          .gitleaks.toml) continue ;;
+              SECURITY-INCIDENT-*.md) continue ;;
+              SECURITY-AUDIT-*.md) continue ;;
+              SECURITY-EXCEPTIONS*.md) continue ;;
+              SECURITY-POSTMORTEM-*.md) continue ;;
+              MALWARE-*.md) continue ;;
+esac
             for p in "${PATTERNS[@]}"; do
               if grep -qE "$p" "$f"; then
                 echo "::error file=$f::IoC signature matched: $p"

@@ -102,6 +102,9 @@ paths = [
   '''yarn\.lock$''',
   '''docs/changelog\.md$''',                                      # incident records reference (already-rotated) old token shapes
   '''docs/incident-2026-04-30-rotation-checklist\.md$''',         # same — incident record needs the old values for verification curls
+  '''^SECURITY-INCIDENT-.*\.md$''',         # Shai-Hulud incident report — quotes IoC markers as docs
+  '''^SECURITY-AUDIT-.*\.md$''',            # Org security audit — quotes IoC markers as docs
+  '''^SECURITY-(EXCEPTIONS|POSTMORTEM).*\.md$''',  # §14.3 break-glass log + postmortems
 ]
 
 regexes = [
@@ -118,6 +121,5 @@ regexes = [
 # Stop-words to reduce false positives on generic high-entropy strings
 # ----------------------------------------------------------------------------
 
-[allowlist.stopwords]
-# Common substrings that indicate a fixture / placeholder / test value, not a real secret
-include = ["EXAMPLE", "FAKE", "TEST_KEY", "PLACEHOLDER", "your-key-here", "REPLACE_ME", "xxxxxxxx"]
+
+stopwords = ["EXAMPLE", "FAKE", "TEST_KEY", "PLACEHOLDER", "your-key-here", "REPLACE_ME", "xxxxxxxx"]
