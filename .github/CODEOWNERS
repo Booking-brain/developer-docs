@@ -1,0 +1,58 @@
+# CODEOWNERS — Booking-brain
+# https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Every PR touching a path listed below auto-requests review from the owner(s).
+# Combined with branch protection's "Require review from Code Owners", these
+# paths cannot be merged without owner approval.
+#
+# Why these paths specifically:
+#   - .github/workflows/**     — CI gates are the org's blast-radius limiter.
+#                                The 2026-04-30 Shai-Hulud worm modified workflow
+#                                files to weaken gates before the malware push.
+#   - .gitleaks.toml           — gitleaks detection rules. Weakening the allowlist
+#                                or removing rules silently disables secret scan.
+#   - .gitignore / .gitattributes — Used to hide secrets from `git add .`. Wave-1
+#                                Shai-Hulud removed `.env*` entries from .gitignore
+#                                so credentials would auto-commit on the next push.
+#   - CODEOWNERS               — Self-protection: changing this file changes the
+#                                whole authorisation model.
+#   - *.config.js (root)       — webpack/babel/tailwind/vite/next/rollup configs.
+#                                Wave-1 + wave-3 Shai-Hulud appended the obfuscated
+#                                payload to these specific files.
+#
+# Owners: @skhaitan @nitinwepro (per 2026-05-15 decision).
+# Either owner can approve; both don't need to.
+
+# --- CI gates ---
+/.github/workflows/                    @skhaitan @nitinwepro
+/.github/CODEOWNERS                    @skhaitan @nitinwepro
+/CODEOWNERS                            @skhaitan @nitinwepro
+
+# --- Detection rules ---
+/.gitleaks.toml                        @skhaitan @nitinwepro
+/.gitleaksignore                       @skhaitan @nitinwepro
+
+# --- Files Shai-Hulud has historically weaponised ---
+/.gitignore                            @skhaitan @nitinwepro
+/.gitattributes                        @skhaitan @nitinwepro
+
+# Root-level config-file targets (the Shai-Hulud payload-injection pattern).
+# Match config files at the REPO ROOT only — subdirectory configs are not owner-gated.
+/tailwind.config.js                    @skhaitan @nitinwepro
+/tailwind.config.ts                    @skhaitan @nitinwepro
+/vite.config.js                        @skhaitan @nitinwepro
+/vite.config.ts                        @skhaitan @nitinwepro
+/webpack.config.js                     @skhaitan @nitinwepro
+/next.config.js                        @skhaitan @nitinwepro
+/next.config.mjs                       @skhaitan @nitinwepro
+/babel.config.js                       @skhaitan @nitinwepro
+/ecosystem.config.js                   @skhaitan @nitinwepro
+/ecosystem.config.example.js           @skhaitan @nitinwepro
+/metro.config.js                       @skhaitan @nitinwepro
+/rollup.config.js                      @skhaitan @nitinwepro
+/nuxt.config.js                        @skhaitan @nitinwepro
+/postcss.config.js                     @skhaitan @nitinwepro
+
+# Root-level logger (the wave-3 reinfection target on precheckin-backend)
+/logger.js                             @skhaitan @nitinwepro
+/logger.ts                             @skhaitan @nitinwepro
