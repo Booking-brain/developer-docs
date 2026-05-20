@@ -66,6 +66,7 @@ jobs:
               .github/workflows/security-*) continue ;;
               docs/incident-*) continue ;;
                           .gitleaks.toml) continue ;;
+                          docs/changelog.md) continue ;;
               SECURITY-INCIDENT-*.md) continue ;;
               SECURITY-AUDIT-*.md) continue ;;
               SECURITY-EXCEPTIONS*.md) continue ;;
@@ -101,7 +102,6 @@ esac
                 echo "::warning::Commit $c has CommitDate timezone $CTZ — known PolinRider fingerprint"
                 BAD=1
                 ;;
-              docs/changelog.md) continue ;;
             esac
             if [ "$CTZ" != "$ATZ" ]; then
               echo "::warning::Commit $c has AuthorDate $ATZ vs CommitDate $CTZ (mismatch — possible spoof)"
