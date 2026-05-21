@@ -84,7 +84,7 @@ tags = ["secret", "gcp"]
 [[rules]]
 id = "bb-malware-blockchain-loader-marker"
 description = "Marker strings from the 2026-04-30 blockchain-loader malware — block any PR that re-introduces them"
-regex = '''(?:_\$_1e42|sfL\(.wuqkt|api\.trongrid\.io|fullnode\.mainnet\.aptoslabs\.com|Tgw\(2509\)|global\["_V"\]\s*=\s*['"]A?9-3900)'''
+regex = '''(?:_\$_1e42|sfL\(.wuqkt|api\.trongrid\.io|fullnode\.mainnet\.aptoslabs\.com|Tgw\(2509\)|global\[['\"][^'\"]+['\"]\]\s*=\s*['\"][A-Z]?9-\d{4}(?:-\d+)?)'''
 keywords = ["_$_1e42", "trongrid", "aptoslabs", "Tgw(2509)"]
 tags = ["malware", "incident-2026-04-30"]
 
