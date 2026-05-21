@@ -66,6 +66,7 @@ jobs:
               .github/workflows/security-*) continue ;;
               docs/incident-*) continue ;;
               .gitleaks.toml) continue ;;
+              docs/changelog.md) continue ;;
               SECURITY-INCIDENT-*.md) continue ;;
               SECURITY-AUDIT-*.md) continue ;;
               SECURITY-EXCEPTIONS*.md) continue ;;
